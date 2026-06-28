@@ -469,15 +469,10 @@ async function generate(cityOverride) {
 weatherStrongとweatherWeakは以下から選択：clear、rain、thunder、snow、wind、cloud、fog
 タイプと天気相性は論理的に一致させること（炎→clear強い、水→rain強い など）`;
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+const response = await fetch('/api/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 1000,
-
-        messages: [{ role: 'user', content: prompt }],
-      }),
+      body: JSON.stringify({ city }),
     });
 
     const data = await response.json();
