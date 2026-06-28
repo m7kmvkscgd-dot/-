@@ -477,28 +477,11 @@ const response = await fetch('/api/generate', {
 
     const data = await response.json();
     clearInterval(stepInterval);
+    
+if (data.error) throw new Error(data.error);
 
-    if (data.error) throw new Error(data.error.message);
+    const monster = data;
 
-    // デバッグ：レスポンス全体をコンソールに出力
-    console.log('API response:', JSON.stringify(data));
-
-    const fullText = data.content
-      .filter(b => b.type === 'text')
-      .map(b => b.text)
-      .join('');
-
-    let jsonStr = null;
-    const codeBlock = fullText.match(/```(?:json)?\s*([\s\S]*?)```/);
-    if (codeBlock) {
-      jsonStr = codeBlock[1].trim();
-    } else {
-      const raw = fullText.match(/\{[\s\S]*\}/);
-      if (raw) jsonStr = raw[0];
-    }
-    if (!jsonStr) throw new Error('JSONが取得できませんでした: ' + fullText.slice(0,200));
-
-    const monster = JSON.parse(jsonStr);
     renderMonster(monster);
 
     // 履歴追加
