@@ -27,12 +27,12 @@
     overflow: hidden;
   }
 
-.hero-bg {
+  .hero-bg {
     position: absolute;
     inset: 0;
     background-image: url('/hero.png');
     background-size: cover;
-    background-position: center 30% ;
+    background-position: center 30%;
     background-repeat: no-repeat;
     filter: brightness(0.5);
     z-index: 0;
@@ -50,11 +50,9 @@
     gap: 24px;
   }
 
-  .logo {
-    text-align: center;
-  }
+  .logo { text-align: center; }
 
-.logo h1 {
+  .logo h1 {
     font-family: 'Hachi Maru Pop', serif;
     font-size: 1.8rem;
     color: #f5d67a;
@@ -90,7 +88,7 @@
     gap: 12px;
   }
 
-.input-row {
+  .input-row {
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -109,13 +107,8 @@
     transition: border-color 0.15s;
   }
 
-  input[type="text"]:focus {
-    border-color: #f5d67a;
-  }
-
-  input[type="text"]::placeholder {
-    color: rgba(255,255,255,0.35);
-  }
+  input[type="text"]:focus { border-color: #f5d67a; }
+  input[type="text"]::placeholder { color: rgba(255,255,255,0.35); }
 
   .gen-btn {
     padding: 14px 24px;
@@ -136,11 +129,7 @@
   .gen-btn:active { transform: scale(0.97); }
   .gen-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
-  .history-panel {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-  }
+  .history-panel { display: flex; flex-wrap: wrap; gap: 6px; }
 
   .history-chip {
     padding: 5px 12px;
@@ -155,12 +144,7 @@
 
   .history-chip:hover { border-color: #f5d67a; color: #f5d67a; }
 
-  .loading-state {
-    text-align: center;
-    padding: 32px;
-    display: none;
-  }
-
+  .loading-state { text-align: center; padding: 32px; display: none; }
   .loading-state.visible { display: block; }
 
   .spinner {
@@ -174,11 +158,7 @@
   }
 
   @keyframes spin { to { transform: rotate(360deg); } }
-
-  .loading-text {
-    font-size: 0.85rem;
-    color: #aaa;
-  }
+  .loading-text { font-size: 0.85rem; color: #aaa; }
 
   .error-state {
     background: rgba(192,57,43,0.2);
@@ -193,7 +173,6 @@
 
   .error-state.visible { display: block; }
 
-  /* カード */
   .card {
     width: 100%;
     background: rgba(10,10,20,0.85);
@@ -229,11 +208,7 @@
     margin-bottom: 4px;
   }
 
-  .monster-meta .city-name {
-    font-size: 0.75rem;
-    color: #888;
-    margin-bottom: 8px;
-  }
+  .monster-meta .city-name { font-size: 0.75rem; color: #888; margin-bottom: 8px; }
 
   .type-badge {
     display: inline-block;
@@ -247,6 +222,22 @@
     border: 1px solid;
   }
 
+  .capture-info {
+    margin-top: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .capture-badge {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 6px;
+    padding: 3px 8px;
+    font-size: 0.72rem;
+    color: #f0ebe0;
+  }
+
   .section { margin-bottom: 18px; }
 
   .section-label {
@@ -257,17 +248,9 @@
     text-transform: uppercase;
   }
 
-  .section-content {
-    font-size: 0.88rem;
-    line-height: 1.8;
-    color: #f0ebe0;
-  }
+  .section-content { font-size: 0.88rem; line-height: 1.8; color: #f0ebe0; }
 
-  .stat-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 8px;
-  }
+  .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
 
   .stat-item {
     background: rgba(255,255,255,0.05);
@@ -276,31 +259,12 @@
     text-align: center;
   }
 
-  .stat-item .stat-label {
-    font-size: 0.6rem;
-    color: #888;
-    margin-bottom: 4px;
-  }
+  .stat-item .stat-label { font-size: 0.6rem; color: #888; margin-bottom: 4px; }
+  .stat-item .stat-value { font-size: 1.2rem; font-weight: 700; color: #f5d67a; }
 
-  .stat-item .stat-value {
-    font-size: 1.2rem;
-    font-weight: 700;
-    color: #f5d67a;
-  }
+  .weather-affinity { display: flex; flex-wrap: wrap; gap: 6px; }
 
-  .weather-affinity {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-  }
-
-  .weather-tag {
-    padding: 4px 10px;
-    border-radius: 999px;
-    font-size: 0.7rem;
-    border: 1px solid;
-  }
-
+  .weather-tag { padding: 4px 10px; border-radius: 999px; font-size: 0.7rem; border: 1px solid; }
   .weather-tag.strong { border-color: #27ae60; color: #27ae60; }
   .weather-tag.weak { border-color: #c0392b; color: #c0392b; }
 
@@ -369,6 +333,7 @@
           <div class="city-name" id="monCity"></div>
           <h2 id="monName"></h2>
           <div id="monTypes"></div>
+          <div class="capture-info" id="captureInfo"></div>
         </div>
       </div>
 
@@ -419,33 +384,24 @@ const WEATHER_LABELS = {
   'snow': '❄️ 雪', 'wind': '💨 強風', 'cloud': '☁️ 曇り', 'fog': '🌫️ 霧',
 };
 
+const WEATHER_CODES = {
+  0: 'clear', 1: 'clear', 2: 'cloud', 3: 'cloud',
+  45: 'fog', 48: 'fog',
+  51: 'rain', 53: 'rain', 55: 'rain', 61: 'rain', 63: 'rain', 65: 'rain',
+  71: 'snow', 73: 'snow', 75: 'snow', 77: 'snow',
+  80: 'rain', 81: 'rain', 82: 'rain',
+  95: 'thunder', 96: 'thunder', 99: 'thunder',
+};
+
 let history = [];
 let lastPromptJa = '';
 let lastPromptEn = '';
+let capturedWeatherType = '';
+let capturedTemp = '';
 
 async function generate(cityOverride) {
   const input = document.getElementById('cityInput');
   const city = cityOverride || input.value.trim();
-  // 天気取得
-  let weatherInfo = '';
-  try {
-    const pos = await new Promise((resolve, reject) => 
-      navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 })
-    );
-    const { latitude: lat, longitude: lon } = pos.coords;
-    const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,pressure_msl,weathercode&timezone=auto`);
-    const weatherData = await weatherRes.json();
-    const c = weatherData.current;
-    const code = c.weathercode;
-    let weatherType = 'clear';
-    if (code >= 61 && code <= 67) weatherType = 'rain';
-    else if (code >= 71 && code <= 77) weatherType = 'snow';
-    else if (code >= 95) weatherType = 'thunder';
-    else if (code >= 2) weatherType = 'cloud';
-    weatherInfo = `Current weather: ${weatherType}, temperature: ${c.temperature_2m}C, pressure: ${c.pressure_msl}hPa`;
-  } catch(e) {
-    weatherInfo = 'Weather unavailable';
-  }
   if (!city) return;
   if (!cityOverride) input.value = city;
 
@@ -461,11 +417,31 @@ async function generate(cityOverride) {
     document.getElementById('loadingText').textContent = steps[stepIdx];
   }, 1200);
 
+  let weatherInfo = 'unknown';
+  capturedWeatherType = '';
+  capturedTemp = '';
+
+  try {
+    const pos = await new Promise((resolve, reject) =>
+      navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 })
+    );
+    const { latitude: lat, longitude: lon } = pos.coords;
+    const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,pressure_msl,weathercode&timezone=auto`);
+    const weatherData = await weatherRes.json();
+    const c = weatherData.current;
+    const weatherType = WEATHER_CODES[c.weathercode] || 'clear';
+    capturedWeatherType = weatherType;
+    capturedTemp = c.temperature_2m;
+    weatherInfo = 'weather: ' + weatherType + ', temperature: ' + c.temperature_2m + 'C, pressure: ' + c.pressure_msl + 'hPa';
+  } catch(e) {
+    weatherInfo = 'unknown';
+  }
+
   try {
     const response = await fetch('/api/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({ city, weatherInfo }),
+      body: JSON.stringify({ city, weatherInfo }),
     });
 
     const data = await response.json();
@@ -473,8 +449,7 @@ body: JSON.stringify({ city, weatherInfo }),
 
     if (data.error) throw new Error(data.error);
 
-    const monster = data;
-    renderMonster(monster);
+    renderMonster(data);
 
     if (!history.includes(city)) {
       history.unshift(city);
@@ -503,8 +478,20 @@ function renderMonster(m) {
   const typesEl = document.getElementById('monTypes');
   typesEl.innerHTML = (m.types || []).map(t => {
     const color = TYPE_COLORS[t] || '#ffffff';
-    return `<span class="type-badge" style="border-color:${color};color:${color}">${t}タイプ</span>`;
+    return '<span class="type-badge" style="border-color:' + color + ';color:' + color + '">' + t + 'タイプ</span>';
   }).join('');
+
+  // 捕獲天気を表示
+  const captureEl = document.getElementById('captureInfo');
+  if (capturedWeatherType) {
+    const wLabel = WEATHER_LABELS[capturedWeatherType] || capturedWeatherType;
+    const tLabel = capturedTemp !== '' ? capturedTemp + '°C' : '';
+    captureEl.innerHTML =
+      '<span class="capture-badge">捕獲天気：' + wLabel + '</span>' +
+      (tLabel ? '<span class="capture-badge">気温：' + tLabel + '</span>' : '');
+  } else {
+    captureEl.innerHTML = '';
+  }
 
   const stats = m.stats || {};
   document.getElementById('monStats').innerHTML = [
@@ -512,24 +499,21 @@ function renderMonster(m) {
     { label: 'ATK', value: stats.atk },
     { label: 'DEF', value: stats.def },
     { label: 'SPD', value: stats.spd },
-  ].map(s => `
-    <div class="stat-item">
-      <div class="stat-label">${s.label}</div>
-      <div class="stat-value">${s.value || '—'}</div>
-    </div>
-  `).join('');
+  ].map(s =>
+    '<div class="stat-item"><div class="stat-label">' + s.label + '</div><div class="stat-value">' + (s.value || '—') + '</div></div>'
+  ).join('');
 
   const weatherEl = document.getElementById('monWeather');
   const strongTags = (m.weatherStrong || []).map(w =>
-    `<span class="weather-tag strong">◎ ${WEATHER_LABELS[w] || w}</span>`
+    '<span class="weather-tag strong">◎ ' + (WEATHER_LABELS[w] || w) + '</span>'
   ).join('');
   const weakTags = (m.weatherWeak || []).map(w =>
-    `<span class="weather-tag weak">✕ ${WEATHER_LABELS[w] || w}</span>`
+    '<span class="weather-tag weak">✕ ' + (WEATHER_LABELS[w] || w) + '</span>'
   ).join('');
   weatherEl.innerHTML = strongTags + weakTags;
 
-  lastPromptJa = (m.promptJa || []).map((p, i) => `${i + 1}. ${p}`).join('\n');
-  lastPromptEn = (m.promptEn || []).map((p, i) => `${i + 1}. ${p}`).join('\n');
+  lastPromptJa = (m.promptJa || []).map((p, i) => (i + 1) + '. ' + p).join('\n');
+  lastPromptEn = (m.promptEn || []).map((p, i) => (i + 1) + '. ' + p).join('\n');
   document.getElementById('monPromptJa').textContent = lastPromptJa;
   document.getElementById('monPromptEn').textContent = lastPromptEn;
 
@@ -542,7 +526,7 @@ function renderHistory() {
   if (history.length === 0) { wrap.style.display = 'none'; return; }
   wrap.style.display = 'block';
   panel.innerHTML = history.map(c =>
-    `<span class="history-chip" onclick="generate('${c}')">${c}</span>`
+    '<span class="history-chip" onclick="generate(\'' + c + '\')">' + c + '</span>'
   ).join('');
 }
 
