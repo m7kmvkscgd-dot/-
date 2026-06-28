@@ -34,8 +34,8 @@ export default async function handler(req, res) {
   },
   "weatherStrong": ["strong1", "strong2"],
   "weatherWeak": ["weak1", "weak2"],
-  "promptJa": ["特徴1","特徴2","特徴3","特徴4","特徴5","スタイル","色調"],
-  "promptEn": ["feature1","feature2","feature3","feature4","feature5","style","palette"],
+"promptJa": ["外観の特徴1","外観の特徴2","外観の特徴3","外観の特徴4","外観の特徴5","ポケモン風の可愛いデフォルメキャラクターデザイン、日本人受けする丸みのあるフォルム、ゲームキャラクターアート","色調・雰囲気","ドット絵バージョン：16x16または32x32ピクセルのドット絵、ファミコン・スーファミ風レトロゲームスタイル"],
+  "promptEn": ["visual feature 1","visual feature 2","visual feature 3","visual feature 4","visual feature 5","Pokemon-style cute chibi character design, rounded friendly proportions appealing to Japanese aesthetic, game character art","color palette and mood","pixel art version: 16x16 or 32x32 pixel sprite, retro game style reminiscent of SNES or Game Boy era"],
   "lore": "歴史・文化的根拠（3〜5文）"
 }`;
 
