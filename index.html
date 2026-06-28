@@ -76,6 +76,31 @@
     letter-spacing: 0.05em;
   }
 
+  .tab-bar {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .tab-btn {
+    flex: 1;
+    padding: 10px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 10px;
+    color: #aaa;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .tab-btn.active {
+    background: rgba(245,214,122,0.15);
+    border-color: #f5d67a;
+    color: #f5d67a;
+  }
+
   .search-box {
     width: 100%;
     background: rgba(255,255,255,0.08);
@@ -294,6 +319,55 @@
   }
 
   .copy-btn:hover { border-color: #f0ebe0; color: #f0ebe0; }
+
+  /* 図鑑 */
+  .zukan-panel {
+    width: 100%;
+    display: none;
+  }
+
+  .zukan-panel.visible { display: block; }
+
+  .zukan-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+
+  .zukan-card {
+    background: rgba(10,10,20,0.85);
+    border: 1px solid rgba(245,214,122,0.2);
+    border-radius: 12px;
+    padding: 12px 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+
+  .zukan-card:hover { border-color: #f5d67a; }
+
+  .zukan-emoji { font-size: 2rem; display: block; margin-bottom: 4px; }
+  .zukan-name { font-size: 0.7rem; color: #f5d67a; font-weight: 700; margin-bottom: 2px; }
+  .zukan-city { font-size: 0.62rem; color: #888; }
+  .zukan-weather { font-size: 0.6rem; color: #aaa; margin-top: 3px; }
+
+  .zukan-empty {
+    text-align: center;
+    color: #888;
+    font-size: 0.85rem;
+    padding: 40px 20px;
+  }
+
+  .saved-badge {
+    display: inline-block;
+    background: rgba(39,174,96,0.2);
+    border: 1px solid #27ae60;
+    border-radius: 6px;
+    padding: 3px 8px;
+    font-size: 0.7rem;
+    color: #27ae60;
+    margin-bottom: 8px;
+  }
 </style>
 </head>
 <body>
@@ -309,65 +383,79 @@
 
     <p class="tagline">全国のご当地モンスターを集めよう！</p>
 
-    <div class="search-box">
-      <div class="input-row">
-        <input type="text" id="cityInput" placeholder="市の名前を入力（例：大阪市、金沢市）" />
-        <button class="gen-btn" id="genBtn" onclick="generate()">生成</button>
-      </div>
-      <div id="historyWrap" style="display:none">
-        <div class="history-panel" id="historyPanel"></div>
-      </div>
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="switchTab('generate')">生成</button>
+      <button class="tab-btn" onclick="switchTab('zukan')">図鑑 <span id="zukanCount"></span></button>
     </div>
 
-    <div class="loading-state" id="loadingState">
-      <div class="spinner"></div>
-      <div class="loading-text" id="loadingText">市の歴史・文化を調査中...</div>
-    </div>
-
-    <div class="error-state" id="errorState"></div>
-
-    <div class="card" id="resultCard">
-      <div class="card-header">
-        <div class="monster-emoji-large" id="monEmoji"></div>
-        <div class="monster-meta">
-          <div class="city-name" id="monCity"></div>
-          <h2 id="monName"></h2>
-          <div id="monTypes"></div>
-          <div class="capture-info" id="captureInfo"></div>
+    <!-- 生成タブ -->
+    <div id="generateTab" style="width:100%;display:flex;flex-direction:column;gap:20px;">
+      <div class="search-box">
+        <div class="input-row">
+          <input type="text" id="cityInput" placeholder="市の名前を入力（例：大阪市、金沢市）" />
+          <button class="gen-btn" id="genBtn" onclick="generate()">生成</button>
+        </div>
+        <div id="historyWrap" style="display:none">
+          <div class="history-panel" id="historyPanel"></div>
         </div>
       </div>
 
-      <div class="section">
-        <div class="section-label">コンセプト</div>
-        <div class="section-content" id="monConcept"></div>
+      <div class="loading-state" id="loadingState">
+        <div class="spinner"></div>
+        <div class="loading-text" id="loadingText">市の歴史・文化を調査中...</div>
       </div>
 
-      <div class="section">
-        <div class="section-label">ステータス</div>
-        <div class="stat-grid" id="monStats"></div>
-      </div>
+      <div class="error-state" id="errorState"></div>
 
-      <div class="section">
-        <div class="section-label">天気相性</div>
-        <div class="weather-affinity" id="monWeather"></div>
-      </div>
+      <div class="card" id="resultCard">
+        <div id="savedBadge" style="display:none"><span class="saved-badge">✓ 図鑑に保存済み</span></div>
+        <div class="card-header">
+          <div class="monster-emoji-large" id="monEmoji"></div>
+          <div class="monster-meta">
+            <div class="city-name" id="monCity"></div>
+            <h2 id="monName"></h2>
+            <div id="monTypes"></div>
+            <div class="capture-info" id="captureInfo"></div>
+          </div>
+        </div>
 
-      <div class="section">
-        <div class="section-label">AIイラスト生成プロンプト（日本語）</div>
-        <div class="prompt-box" id="monPromptJa"></div>
-        <button class="copy-btn" onclick="copyPrompt('ja')">コピー</button>
-      </div>
+        <div class="section">
+          <div class="section-label">コンセプト</div>
+          <div class="section-content" id="monConcept"></div>
+        </div>
 
-      <div class="section">
-        <div class="section-label">AIイラスト生成プロンプト（English）</div>
-        <div class="prompt-box" id="monPromptEn"></div>
-        <button class="copy-btn" onclick="copyPrompt('en')">コピー</button>
-      </div>
+        <div class="section">
+          <div class="section-label">ステータス</div>
+          <div class="stat-grid" id="monStats"></div>
+        </div>
 
-      <div class="section" style="margin-bottom:0">
-        <div class="section-label">元ネタ</div>
-        <div class="section-content" id="monLore"></div>
+        <div class="section">
+          <div class="section-label">天気相性</div>
+          <div class="weather-affinity" id="monWeather"></div>
+        </div>
+
+        <div class="section">
+          <div class="section-label">AIイラスト生成プロンプト（日本語）</div>
+          <div class="prompt-box" id="monPromptJa"></div>
+          <button class="copy-btn" onclick="copyPrompt('ja')">コピー</button>
+        </div>
+
+        <div class="section">
+          <div class="section-label">AIイラスト生成プロンプト（English）</div>
+          <div class="prompt-box" id="monPromptEn"></div>
+          <button class="copy-btn" onclick="copyPrompt('en')">コピー</button>
+        </div>
+
+        <div class="section" style="margin-bottom:0">
+          <div class="section-label">元ネタ</div>
+          <div class="section-content" id="monLore"></div>
+        </div>
       </div>
+    </div>
+
+    <!-- 図鑑タブ -->
+    <div class="zukan-panel" id="zukanTab">
+      <div id="zukanGrid"></div>
     </div>
 
   </div>
@@ -398,6 +486,77 @@ let lastPromptJa = '';
 let lastPromptEn = '';
 let capturedWeatherType = '';
 let capturedTemp = '';
+let currentTab = 'generate';
+
+// localStorage操作
+function saveMonster(city, monster) {
+  const key = 'monster_' + city;
+  localStorage.setItem(key, JSON.stringify(monster));
+  updateZukanCount();
+}
+
+function loadMonster(city) {
+  const key = 'monster_' + city;
+  const data = localStorage.getItem(key);
+  return data ? JSON.parse(data) : null;
+}
+
+function getAllMonsters() {
+  const monsters = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key.startsWith('monster_')) {
+      try {
+        const m = JSON.parse(localStorage.getItem(key));
+        monsters.push(m);
+      } catch(e) {}
+    }
+  }
+  return monsters;
+}
+
+function updateZukanCount() {
+  const count = getAllMonsters().length;
+  document.getElementById('zukanCount').textContent = count > 0 ? '(' + count + ')' : '';
+}
+
+function switchTab(tab) {
+  currentTab = tab;
+  const btns = document.querySelectorAll('.tab-btn');
+  btns[0].classList.toggle('active', tab === 'generate');
+  btns[1].classList.toggle('active', tab === 'zukan');
+  document.getElementById('generateTab').style.display = tab === 'generate' ? 'flex' : 'none';
+  document.getElementById('zukanTab').classList.toggle('visible', tab === 'zukan');
+  if (tab === 'zukan') renderZukan();
+}
+
+function renderZukan() {
+  const monsters = getAllMonsters();
+  const grid = document.getElementById('zukanGrid');
+  if (monsters.length === 0) {
+    grid.innerHTML = '<div class="zukan-empty">まだモンスターがいません<br>市を訪れて捕まえよう！</div>';
+    return;
+  }
+  grid.innerHTML = '<div class="zukan-grid">' + monsters.map(m => {
+    const wLabel = m.capturedWeather ? (WEATHER_LABELS[m.capturedWeather] || m.capturedWeather) : '';
+    return '<div class="zukan-card" onclick="showFromZukan(\'' + m.city + '\')">' +
+      '<span class="zukan-emoji">' + (m.emoji || '👾') + '</span>' +
+      '<div class="zukan-name">' + m.name + '</div>' +
+      '<div class="zukan-city">' + m.city + '</div>' +
+      (wLabel ? '<div class="zukan-weather">' + wLabel + '</div>' : '') +
+      '</div>';
+  }).join('') + '</div>';
+}
+
+function showFromZukan(city) {
+  const m = loadMonster(city);
+  if (!m) return;
+  switchTab('generate');
+  capturedWeatherType = m.capturedWeather || '';
+  capturedTemp = m.capturedTemp || '';
+  renderMonster(m);
+  document.getElementById('cityInput').value = city;
+}
 
 async function generate(cityOverride) {
   const input = document.getElementById('cityInput');
@@ -405,6 +564,17 @@ async function generate(cityOverride) {
   if (!city) return;
   if (!cityOverride) input.value = city;
 
+  // 保存済みチェック
+  const saved = loadMonster(city);
+  if (saved) {
+    capturedWeatherType = saved.capturedWeather || '';
+    capturedTemp = saved.capturedTemp || '';
+    renderMonster(saved);
+    document.getElementById('savedBadge').style.display = 'block';
+    return;
+  }
+
+  document.getElementById('savedBadge').style.display = 'none';
   document.getElementById('genBtn').disabled = true;
   document.getElementById('loadingState').classList.add('visible');
   document.getElementById('resultCard').classList.remove('visible');
@@ -426,7 +596,7 @@ async function generate(cityOverride) {
       navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 })
     );
     const { latitude: lat, longitude: lon } = pos.coords;
-    const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,pressure_msl,weathercode&timezone=auto`);
+    const weatherRes = await fetch('https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lon + '&current=temperature_2m,pressure_msl,weathercode&timezone=auto');
     const weatherData = await weatherRes.json();
     const c = weatherData.current;
     const weatherType = WEATHER_CODES[c.weathercode] || 'clear';
@@ -448,6 +618,11 @@ async function generate(cityOverride) {
     clearInterval(stepInterval);
 
     if (data.error) throw new Error(data.error);
+
+    // 捕獲情報を追加して保存
+    data.capturedWeather = capturedWeatherType;
+    data.capturedTemp = capturedTemp;
+    saveMonster(city, data);
 
     renderMonster(data);
 
@@ -481,11 +656,12 @@ function renderMonster(m) {
     return '<span class="type-badge" style="border-color:' + color + ';color:' + color + '">' + t + 'タイプ</span>';
   }).join('');
 
-  // 捕獲天気を表示
   const captureEl = document.getElementById('captureInfo');
-  if (capturedWeatherType) {
-    const wLabel = WEATHER_LABELS[capturedWeatherType] || capturedWeatherType;
-    const tLabel = capturedTemp !== '' ? capturedTemp + '°C' : '';
+  const wType = m.capturedWeather || capturedWeatherType;
+  const temp = m.capturedTemp !== undefined ? m.capturedTemp : capturedTemp;
+  if (wType) {
+    const wLabel = WEATHER_LABELS[wType] || wType;
+    const tLabel = temp !== '' ? temp + '°C' : '';
     captureEl.innerHTML =
       '<span class="capture-badge">捕獲天気：' + wLabel + '</span>' +
       (tLabel ? '<span class="capture-badge">気温：' + tLabel + '</span>' : '');
@@ -543,6 +719,8 @@ function copyPrompt(lang) {
 document.getElementById('cityInput').addEventListener('keydown', e => {
   if (e.key === 'Enter') generate();
 });
+
+updateZukanCount();
 </script>
 </body>
 </html>
