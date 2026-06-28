@@ -220,15 +220,40 @@
     border-bottom: 1px solid rgba(255,255,255,0.1);
   }
 
+  .monster-icon-wrap {
+    width: 100px;
+    height: 100px;
+    border-radius: 12px;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: rgba(255,255,255,0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(245,214,122,0.2);
+  }
+
+  .monster-icon-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: none;
+  }
+
   .monster-emoji-large {
     font-size: 4rem;
     line-height: 1;
     filter: drop-shadow(0 0 12px rgba(245,214,122,0.4));
   }
 
+  .monster-meta {
+    flex: 1;
+    min-width: 0;
+  }
+
   .monster-meta h2 {
     font-family: 'Hachi Maru Pop', serif;
-    font-size: 1.6rem;
+    font-size: 1.4rem;
     color: #f5d67a;
     margin-bottom: 4px;
   }
@@ -320,12 +345,7 @@
 
   .copy-btn:hover { border-color: #f0ebe0; color: #f0ebe0; }
 
-  /* 図鑑 */
-  .zukan-panel {
-    width: 100%;
-    display: none;
-  }
-
+  .zukan-panel { width: 100%; display: none; }
   .zukan-panel.visible { display: block; }
 
   .zukan-grid {
@@ -338,13 +358,23 @@
     background: rgba(10,10,20,0.85);
     border: 1px solid rgba(245,214,122,0.2);
     border-radius: 12px;
-    padding: 12px 8px;
+    padding: 10px 8px;
     text-align: center;
     cursor: pointer;
     transition: border-color 0.15s;
+    overflow: hidden;
   }
 
   .zukan-card:hover { border-color: #f5d67a; }
+
+  .zukan-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 8px;
+    object-fit: cover;
+    display: none;
+    margin: 0 auto 4px;
+  }
 
   .zukan-emoji { font-size: 2rem; display: block; margin-bottom: 4px; }
   .zukan-name { font-size: 0.7rem; color: #f5d67a; font-weight: 700; margin-bottom: 2px; }
@@ -388,7 +418,6 @@
       <button class="tab-btn" onclick="switchTab('zukan')">図鑑 <span id="zukanCount"></span></button>
     </div>
 
-    <!-- 生成タブ -->
     <div id="generateTab" style="width:100%;display:flex;flex-direction:column;gap:20px;">
       <div class="search-box">
         <div class="input-row">
@@ -410,7 +439,10 @@
       <div class="card" id="resultCard">
         <div id="savedBadge" style="display:none"><span class="saved-badge">✓ 図鑑に保存済み</span></div>
         <div class="card-header">
-          <div class="monster-emoji-large" id="monEmoji"></div>
+          <div class="monster-icon-wrap" id="monIconWrap">
+            <img class="monster-icon-img" id="monIconImg" src="" alt="" />
+            <span class="monster-emoji-large" id="monEmoji"></span>
+          </div>
           <div class="monster-meta">
             <div class="city-name" id="monCity"></div>
             <h2 id="monName"></h2>
@@ -453,7 +485,6 @@
       </div>
     </div>
 
-    <!-- 図鑑タブ -->
     <div class="zukan-panel" id="zukanTab">
       <div id="zukanGrid"></div>
     </div>
@@ -481,6 +512,17 @@ const WEATHER_CODES = {
   95: 'thunder', 96: 'thunder', 99: 'thunder',
 };
 
+// 市名→画像ファイル名のマッピング
+const CITY_IMAGES = {
+  '大阪市': '/osaka.png',
+  '尼崎市': '/amagasaki.png',
+  '和歌山市': '/wakayama.png',
+};
+
+function getCityImage(city) {
+  return CITY_IMAGES[city] || null;
+}
+
 let history = [];
 let lastPromptJa = '';
 let lastPromptEn = '';
@@ -488,7 +530,6 @@ let capturedWeatherType = '';
 let capturedTemp = '';
 let currentTab = 'generate';
 
-// localStorage操作
 function saveMonster(city, monster) {
   const key = 'monster_' + city;
   localStorage.setItem(key, JSON.stringify(monster));
@@ -539,8 +580,12 @@ function renderZukan() {
   }
   grid.innerHTML = '<div class="zukan-grid">' + monsters.map(m => {
     const wLabel = m.capturedWeather ? (WEATHER_LABELS[m.capturedWeather] || m.capturedWeather) : '';
+    const imgSrc = getCityImage(m.city);
+    const iconHtml = imgSrc
+      ? '<img class="zukan-icon" src="' + imgSrc + '" alt="' + m.name + '" style="display:block" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'block\'" /><span class="zukan-emoji" style="display:none">' + (m.emoji || '👾') + '</span>'
+      : '<span class="zukan-emoji">' + (m.emoji || '👾') + '</span>';
     return '<div class="zukan-card" onclick="showFromZukan(\'' + m.city + '\')">' +
-      '<span class="zukan-emoji">' + (m.emoji || '👾') + '</span>' +
+      iconHtml +
       '<div class="zukan-name">' + m.name + '</div>' +
       '<div class="zukan-city">' + m.city + '</div>' +
       (wLabel ? '<div class="zukan-weather">' + wLabel + '</div>' : '') +
@@ -564,7 +609,6 @@ async function generate(cityOverride) {
   if (!city) return;
   if (!cityOverride) input.value = city;
 
-  // 保存済みチェック
   const saved = loadMonster(city);
   if (saved) {
     capturedWeatherType = saved.capturedWeather || '';
@@ -619,11 +663,9 @@ async function generate(cityOverride) {
 
     if (data.error) throw new Error(data.error);
 
-    // 捕獲情報を追加して保存
     data.capturedWeather = capturedWeatherType;
     data.capturedTemp = capturedTemp;
     saveMonster(city, data);
-
     renderMonster(data);
 
     if (!history.includes(city)) {
@@ -644,11 +686,30 @@ async function generate(cityOverride) {
 }
 
 function renderMonster(m) {
-  document.getElementById('monEmoji').textContent = m.emoji || '👾';
   document.getElementById('monCity').textContent = m.city;
   document.getElementById('monName').textContent = m.name;
   document.getElementById('monConcept').textContent = m.concept;
   document.getElementById('monLore').textContent = m.lore;
+
+  // アイコン画像またはえもじを表示
+  const imgSrc = getCityImage(m.city);
+  const imgEl = document.getElementById('monIconImg');
+  const emojiEl = document.getElementById('monEmoji');
+
+  if (imgSrc) {
+    imgEl.src = imgSrc;
+    imgEl.style.display = 'block';
+    emojiEl.style.display = 'none';
+    imgEl.onerror = function() {
+      imgEl.style.display = 'none';
+      emojiEl.style.display = 'block';
+      emojiEl.textContent = m.emoji || '👾';
+    };
+  } else {
+    imgEl.style.display = 'none';
+    emojiEl.style.display = 'block';
+    emojiEl.textContent = m.emoji || '👾';
+  }
 
   const typesEl = document.getElementById('monTypes');
   typesEl.innerHTML = (m.types || []).map(t => {
