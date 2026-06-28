@@ -300,3 +300,243 @@
   }
 
   .weather-tag.strong { border-color: #27ae60; color: #27ae60; }
+  .weather-tag.weak { border-color: #c0392b; color: #c0392b; }
+
+  .prompt-box {
+    background: rgba(0,0,0,0.4);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    padding: 14px;
+    font-size: 0.75rem;
+    line-height: 1.7;
+    color: #ccc;
+    font-family: monospace;
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+
+  .copy-btn {
+    margin-top: 8px;
+    padding: 8px 16px;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 6px;
+    color: #888;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+  }
+
+  .copy-btn:hover { border-color: #f0ebe0; color: #f0ebe0; }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-content">
+
+    <div class="logo">
+      <h1>ご当地モンスター<br>生成器</h1>
+      <p>MONSTER GENERATOR — PROTOTYPE</p>
+    </div>
+
+    <p class="tagline">全国のご当地モンスターを集めよう！</p>
+
+    <div class="search-box">
+      <div class="input-row">
+        <input type="text" id="cityInput" placeholder="市の名前を入力（例：大阪市、金沢市）" />
+        <button class="gen-btn" id="genBtn" onclick="generate()">生成</button>
+      </div>
+      <div id="historyWrap" style="display:none">
+        <div class="history-panel" id="historyPanel"></div>
+      </div>
+    </div>
+
+    <div class="loading-state" id="loadingState">
+      <div class="spinner"></div>
+      <div class="loading-text" id="loadingText">市の歴史・文化を調査中...</div>
+    </div>
+
+    <div class="error-state" id="errorState"></div>
+
+    <div class="card" id="resultCard">
+      <div class="card-header">
+        <div class="monster-emoji-large" id="monEmoji"></div>
+        <div class="monster-meta">
+          <div class="city-name" id="monCity"></div>
+          <h2 id="monName"></h2>
+          <div id="monTypes"></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-label">コンセプト</div>
+        <div class="section-content" id="monConcept"></div>
+      </div>
+
+      <div class="section">
+        <div class="section-label">ステータス</div>
+        <div class="stat-grid" id="monStats"></div>
+      </div>
+
+      <div class="section">
+        <div class="section-label">天気相性</div>
+        <div class="weather-affinity" id="monWeather"></div>
+      </div>
+
+      <div class="section">
+        <div class="section-label">AIイラスト生成プロンプト（日本語）</div>
+        <div class="prompt-box" id="monPromptJa"></div>
+        <button class="copy-btn" onclick="copyPrompt('ja')">コピー</button>
+      </div>
+
+      <div class="section">
+        <div class="section-label">AIイラスト生成プロンプト（English）</div>
+        <div class="prompt-box" id="monPromptEn"></div>
+        <button class="copy-btn" onclick="copyPrompt('en')">コピー</button>
+      </div>
+
+      <div class="section" style="margin-bottom:0">
+        <div class="section-label">元ネタ</div>
+        <div class="section-content" id="monLore"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const TYPE_COLORS = {
+  '炎': '#ff6644', '水': '#4499ff', '雷': '#ffdd00', '氷': '#88eeff',
+  '風': '#44ffaa', '土': '#cc9944', '闇': '#cc66ff', '光': '#ffffcc', '鋼': '#aaaacc',
+};
+
+const WEATHER_LABELS = {
+  'clear': '☀️ 晴れ', 'rain': '🌧️ 雨', 'thunder': '⛈️ 嵐',
+  'snow': '❄️ 雪', 'wind': '💨 強風', 'cloud': '☁️ 曇り', 'fog': '🌫️ 霧',
+};
+
+let history = [];
+let lastPromptJa = '';
+let lastPromptEn = '';
+
+async function generate(cityOverride) {
+  const input = document.getElementById('cityInput');
+  const city = cityOverride || input.value.trim();
+  if (!city) return;
+  if (!cityOverride) input.value = city;
+
+  document.getElementById('genBtn').disabled = true;
+  document.getElementById('loadingState').classList.add('visible');
+  document.getElementById('resultCard').classList.remove('visible');
+  document.getElementById('errorState').classList.remove('visible');
+
+  const steps = ['市の歴史・文化を調査中...', '特産品・地形を分析中...', 'モンスターを設計中...', 'プロンプトを生成中...'];
+  let stepIdx = 0;
+  const stepInterval = setInterval(() => {
+    stepIdx = (stepIdx + 1) % steps.length;
+    document.getElementById('loadingText').textContent = steps[stepIdx];
+  }, 1200);
+
+  try {
+    const response = await fetch('/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ city }),
+    });
+
+    const data = await response.json();
+    clearInterval(stepInterval);
+
+    if (data.error) throw new Error(data.error);
+
+    const monster = data;
+    renderMonster(monster);
+
+    if (!history.includes(city)) {
+      history.unshift(city);
+      if (history.length > 8) history.pop();
+      renderHistory();
+    }
+
+  } catch (e) {
+    clearInterval(stepInterval);
+    const errEl = document.getElementById('errorState');
+    errEl.textContent = 'エラー: ' + e.message;
+    errEl.classList.add('visible');
+  } finally {
+    document.getElementById('loadingState').classList.remove('visible');
+    document.getElementById('genBtn').disabled = false;
+  }
+}
+
+function renderMonster(m) {
+  document.getElementById('monEmoji').textContent = m.emoji || '👾';
+  document.getElementById('monCity').textContent = m.city;
+  document.getElementById('monName').textContent = m.name;
+  document.getElementById('monConcept').textContent = m.concept;
+  document.getElementById('monLore').textContent = m.lore;
+
+  const typesEl = document.getElementById('monTypes');
+  typesEl.innerHTML = (m.types || []).map(t => {
+    const color = TYPE_COLORS[t] || '#ffffff';
+    return `<span class="type-badge" style="border-color:${color};color:${color}">${t}タイプ</span>`;
+  }).join('');
+
+  const stats = m.stats || {};
+  document.getElementById('monStats').innerHTML = [
+    { label: 'HP', value: stats.hp },
+    { label: 'ATK', value: stats.atk },
+    { label: 'DEF', value: stats.def },
+    { label: 'SPD', value: stats.spd },
+  ].map(s => `
+    <div class="stat-item">
+      <div class="stat-label">${s.label}</div>
+      <div class="stat-value">${s.value || '—'}</div>
+    </div>
+  `).join('');
+
+  const weatherEl = document.getElementById('monWeather');
+  const strongTags = (m.weatherStrong || []).map(w =>
+    `<span class="weather-tag strong">◎ ${WEATHER_LABELS[w] || w}</span>`
+  ).join('');
+  const weakTags = (m.weatherWeak || []).map(w =>
+    `<span class="weather-tag weak">✕ ${WEATHER_LABELS[w] || w}</span>`
+  ).join('');
+  weatherEl.innerHTML = strongTags + weakTags;
+
+  lastPromptJa = (m.promptJa || []).map((p, i) => `${i + 1}. ${p}`).join('\n');
+  lastPromptEn = (m.promptEn || []).map((p, i) => `${i + 1}. ${p}`).join('\n');
+  document.getElementById('monPromptJa').textContent = lastPromptJa;
+  document.getElementById('monPromptEn').textContent = lastPromptEn;
+
+  document.getElementById('resultCard').classList.add('visible');
+}
+
+function renderHistory() {
+  const wrap = document.getElementById('historyWrap');
+  const panel = document.getElementById('historyPanel');
+  if (history.length === 0) { wrap.style.display = 'none'; return; }
+  wrap.style.display = 'block';
+  panel.innerHTML = history.map(c =>
+    `<span class="history-chip" onclick="generate('${c}')">${c}</span>`
+  ).join('');
+}
+
+function copyPrompt(lang) {
+  const text = lang === 'ja' ? lastPromptJa : lastPromptEn;
+  navigator.clipboard.writeText(text).then(() => {
+    const btns = document.querySelectorAll('.copy-btn');
+    const idx = lang === 'ja' ? 0 : 1;
+    btns[idx].textContent = 'コピー完了';
+    setTimeout(() => btns[idx].textContent = 'コピー', 1500);
+  });
+}
+
+document.getElementById('cityInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') generate();
+});
+</script>
+</body>
+</html>
