@@ -426,6 +426,26 @@ let lastPromptEn = '';
 async function generate(cityOverride) {
   const input = document.getElementById('cityInput');
   const city = cityOverride || input.value.trim();
+  // 天気取得
+  let weatherInfo = '';
+  try {
+    const pos = await new Promise((resolve, reject) => 
+      navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 })
+    );
+    const { latitude: lat, longitude: lon } = pos.coords;
+    const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,pressure_msl,weathercode&timezone=auto`);
+    const weatherData = await weatherRes.json();
+    const c = weatherData.current;
+    const code = c.weathercode;
+    let weatherType = 'clear';
+    if (code >= 61 && code <= 67) weatherType = 'rain';
+    else if (code >= 71 && code <= 77) weatherType = 'snow';
+    else if (code >= 95) weatherType = 'thunder';
+    else if (code >= 2) weatherType = 'cloud';
+    weatherInfo = `Current weather: ${weatherType}, temperature: ${c.temperature_2m}C, pressure: ${c.pressure_msl}hPa`;
+  } catch(e) {
+    weatherInfo = 'Weather unavailable';
+  }
   if (!city) return;
   if (!cityOverride) input.value = city;
 
@@ -445,7 +465,7 @@ async function generate(cityOverride) {
     const response = await fetch('/api/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ city }),
+body: JSON.stringify({ city, weatherInfo }),
     });
 
     const data = await response.json();
