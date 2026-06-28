@@ -2,26 +2,48 @@ module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
+
   const { city } = req.body;
+
   if (!city) {
     return res.status(400).json({ error: 'City is required' });
   }
-
-  const prompt = `You are a game designer. Design a local monster for "${city}" in Japan.
-
-Research and analyze the following about ${city}:
-- Historical background
-- Geography and climate
-- Local specialties and industries
-- Legends and folklore
-- Modern characteristics and symbols
-
-Output ONLY a JSON object with no explanation or markdown. Use this exact format:
-
-{"name":"monster name in katakana reflecting local characteristics","emoji":"single emoji","city":"${city}","concept":"monster concept in Japanese 2-3 sentences","types":["type1","type2"],"stats":{"hp":100,"atk":50,"def":40,"spd":35},"weatherStrong":["clear","rain"],"weatherWeak":["snow","thunder"],"promptJa":["visual feature 1 in Japanese","visual feature 2 in Japanese","visual feature 3 in Japanese","visual feature 4 in Japanese","visual feature 5 in Japanese","pokemon style cute chibi game art rounded friendly proportions","color palette and atmosphere","pixel art 32px retro SNES game boy style"],"promptEn":["visual feature 1","visual feature 2","visual feature 3","visual feature 4","visual feature 5","Pokemon-style cute chibi character design rounded friendly proportions Japanese game art","color palette and mood","pixel art 32px retro SNES Game Boy style sprite"],"lore":"historical and cultural basis in Japanese 3-5 sentences"}`;
 
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'x-api-key': process.env.ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1500,
+        messages: [{
+          role: 'user',
+          content: 'You are a game designer. Design a local monster for the Japanese city of ' + city + '. Research its history, geography, local specialties, legends, and modern characteristics. Output ONLY a valid JSON object with no explanation, no markdown, no code blocks. The JSON must use double quotes only. Format: {"name":"katakana monster name","emoji":"single emoji","city":"' + city + '","concept":"concept in Japanese","types":["type1","type2"],"stats":{"hp":100,"atk":50,"def":40,"spd":35},"weatherStrong":["clear","rain"],"weatherWeak":["snow","thunder"],"promptJa":["feature1","feature2","feature3","feature4","feature5","pokemon cute chibi style","colors","pixel art 32px"],"promptEn":["feature1","feature2","feature3","feature4","feature5","pokemon cute chibi style","colors","pixel art 32px"],"lore":"lore in Japanese"}'
+        }],
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!data.content || !data.content[0]) {
+      return res.status(500).json({ error: 'No response from API' });
+    }
+
+    const text = data.content[0].text;
+
+    const match = text.match(/\{[\s\S]*\}/);
+    if (!match) {
+      return res.status(500).json({ error: 'No JSON found in response' });
+    }
+
+    const monster = JSON.parse(match[0]);
+    return res.status(200).json(monster);
+
+  } catch (e) {
+    return res.status(500).json({ error: e.message });
+  }
+};
