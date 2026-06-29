@@ -1,15 +1,38 @@
 const { put } = require('@vercel/blob');
+const { Redis } = require('@upstash/redis');
+
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN,
+});
+
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
-  const { city, weatherInfo } = req.body;
+  const { city, weatherInfo, stage } = req.body;
   if (!city) {
     return res.status(400).json({ error: 'City is required' });
   }
+
+  const cacheKey = 'monster:' + (stage || 'adult') + ':' + city;
+
+  // キャッシュ確認
+  const cached = await redis.get(cacheKey);
+  if (cached) {
+    return res.status(200).json(cached);
+  }
+
   try {
     const weather = weatherInfo || 'unknown';
-    const content = 'You are a game designer. Design a local monster for the Japanese city of ' + city + '. Research its history, geography, local specialties, legends, and modern characteristics. Current weather at player location: ' + weather + '. Output ONLY a valid JSON object with no explanation, no markdown, no code blocks. The JSON must use double quotes only. Format: {"name":"katakana monster name","emoji":"single emoji","city":"' + city + '","concept":"concept in Japanese","types":["type1","type2"],"stats":{"hp":100,"atk":50,"def":40,"spd":35},"weatherStrong":["clear","rain"],"weatherWeak":["snow","thunder"],"promptJa":["feature1","feature2","feature3","feature4","feature5","pokemon cute chibi style","colors","pixel art 32px"],"promptEn":["feature1","feature2","feature3","feature4","feature5","512x512px square format, soft gradient background matching the monster color theme NOT transparent, pokemon-style cute chibi character centered taking 70% of image, simple beautiful background with nature or environment elements matching the monster type, Japanese anime RPG game art","color palette and mood","pixel art 32px retro SNES Game Boy style sprite"],"lore":"lore in Japanese"}';
+    const isChild = stage === 'child';
+
+    const stageNote = isChild
+      ? 'This is the CHILD form. Make it look young, small, cute, and less powerful than the adult form. The design should hint at what it will become.'
+      : 'This is the ADULT form. Make it look mature, powerful, and fully evolved.';
+
+    const content = 'You are a game designer. Design a local monster for the Japanese city of ' + city + '. Research its history, geography, local specialties, legends, and modern characteristics. Current weather at player location: ' + weather + '. ' + stageNote + ' Output ONLY a valid JSON object with no explanation, no markdown, no code blocks. The JSON must use double quotes only. Format: {"name":"katakana monster name","emoji":"single emoji","city":"' + city + '","concept":"concept in Japanese","types":["type1","type2"],"stats":{"hp":100,"atk":50,"def":40,"spd":35},"weatherStrong":["clear","rain"],"weatherWeak":["snow","thunder"],"promptEn":["feature1","feature2","feature3","feature4","feature5","512x512px square format, soft gradient background matching the monster color theme NOT transparent, pokemon-style cute chibi character centered taking 70% of image, simple beautiful background with nature or environment elements matching the monster type, Japanese anime RPG game art","color palette and mood"],"lore":"lore in Japanese"}';
+
     const claudeRes = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -23,6 +46,7 @@ module.exports = async function handler(req, res) {
         messages: [{ role: 'user', content: content }],
       }),
     });
+
     const claudeData = await claudeRes.json();
     if (!claudeData.content || !claudeData.content[0]) {
       return res.status(500).json({ error: 'No response from Claude API' });
@@ -33,6 +57,9 @@ module.exports = async function handler(req, res) {
       return res.status(500).json({ error: 'No JSON found in response' });
     }
     const monster = JSON.parse(match[0]);
+    monster.stage = stage || 'adult';
+
+    // gpt-image-1で画像生成
     try {
       const imagePrompt = (monster.promptEn || []).join(', ');
       const imageRes = await fetch('https://api.openai.com/v1/images/generations', {
@@ -50,23 +77,23 @@ module.exports = async function handler(req, res) {
         }),
       });
       const imageData = await imageRes.json();
-      if (imageData.error) {
-        monster.imageError = imageData.error.message;
-      } else if (imageData.data && imageData.data[0] && imageData.data[0].b64_json) {
+      if (imageData.data && imageData.data[0] && imageData.data[0].b64_json) {
         const b64 = imageData.data[0].b64_json;
         const buffer = Buffer.from(b64, 'base64');
-        const fileName = 'monsters/' + city.replace(/[^\w]/g, '') + '.png';
+        const fileName = 'monsters/' + city.replace(/[^\w]/g, '') + '_' + (stage || 'adult') + '.png';
         const { url } = await put(fileName, buffer, {
           access: 'public',
           contentType: 'image/png',
         });
         monster.imageUrl = url;
-      } else {
-        monster.imageError = 'No image data: ' + JSON.stringify(imageData).slice(0, 200);
       }
     } catch (imgError) {
       monster.imageError = imgError.message;
     }
+
+    // Redisに保存
+    await redis.set(cacheKey, monster);
+
     return res.status(200).json(monster);
   } catch (e) {
     return res.status(500).json({ error: e.message });
