@@ -729,7 +729,7 @@ function switchTab(tab) {
   if (tab === 'farm') renderFarm();
 }
 
-async function renderFarm() {
+async function renderFarm(skipHatchCheck = false) {
   const farm = getFarmData();
   const grid = document.getElementById('farmGrid');
 
@@ -738,9 +738,11 @@ async function renderFarm() {
     return;
   }
 
-  // 孵化チェック
-  for (const city of Object.keys(farm)) {
-    await checkAndHatch(city);
+  // 孵化チェック（タイマーからの呼び出し時はスキップ）
+  if (!skipHatchCheck) {
+    for (const city of Object.keys(farm)) {
+      await checkAndHatch(city);
+    }
   }
 
   const updatedFarm = getFarmData();
@@ -796,7 +798,7 @@ async function renderFarm() {
   // タイマー更新
   if (farmTimerInterval) clearInterval(farmTimerInterval);
   farmTimerInterval = setInterval(() => {
-    if (currentTab === 'farm') renderFarm();
+if (currentTab === 'farm') renderFarm(true);
   }, 1000);
 }
 
