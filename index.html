@@ -150,7 +150,6 @@
 
   .hatch-emoji {
     font-size: 4rem;
-    animation: bounce 0.6s ease-in-out infinite alternate;
     display: block;
     margin-bottom: 16px;
   }
@@ -173,6 +172,7 @@
 
   .hatch-emoji.shaking { animation: shake 0.3s ease-in-out infinite; }
   .hatch-emoji.glowing { animation: glow 0.5s ease-in-out infinite alternate; }
+  .hatch-emoji.bouncing { animation: bounce 0.6s ease-in-out infinite alternate; }
 
   .hatch-message {
     font-family: 'Hachi Maru Pop', serif;
@@ -181,10 +181,7 @@
     margin-bottom: 8px;
   }
 
-  .hatch-sub {
-    font-size: 0.8rem;
-    color: #ccc;
-  }
+  .hatch-sub { font-size: 0.8rem; color: #ccc; }
 
   .particles {
     display: flex;
@@ -261,12 +258,7 @@
     border: 1px solid rgba(245,214,122,0.2);
   }
 
-  .monster-icon-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: none;
-  }
+  .monster-icon-img { width: 100%; height: 100%; object-fit: cover; display: none; }
 
   .monster-emoji-large {
     font-size: 3.5rem;
@@ -339,9 +331,30 @@
   .weather-tag.strong { border-color: #27ae60; color: #27ae60; }
   .weather-tag.weak { border-color: #c0392b; color: #c0392b; }
 
-  /* 牧場 */
+  /* 牧場・地図 */
   .farm-panel { width: 100%; display: none; }
   .farm-panel.visible { display: block; }
+
+  .farm-sub-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+
+  .farm-sub-btn {
+    flex: 1;
+    padding: 8px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    color: #aaa;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .farm-sub-btn.active {
+    background: rgba(245,214,122,0.15);
+    border-color: #f5d67a;
+    color: #f5d67a;
+  }
 
   .trainer-card {
     background: rgba(10,10,20,0.85);
@@ -370,20 +383,8 @@
   .trainer-name { font-family: 'Hachi Maru Pop', serif; font-size: 1rem; color: #f5d67a; margin-bottom: 4px; }
   .trainer-level { font-size: 0.75rem; color: #aaa; margin-bottom: 6px; }
 
-  .exp-bar-wrap {
-    background: rgba(255,255,255,0.1);
-    border-radius: 999px;
-    height: 6px;
-    overflow: hidden;
-  }
-
-  .exp-bar {
-    height: 100%;
-    background: linear-gradient(90deg, #8e44ad, #f5d67a);
-    border-radius: 999px;
-    transition: width 0.5s ease;
-  }
-
+  .exp-bar-wrap { background: rgba(255,255,255,0.1); border-radius: 999px; height: 6px; overflow: hidden; }
+  .exp-bar { height: 100%; background: linear-gradient(90deg, #8e44ad, #f5d67a); border-radius: 999px; transition: width 0.5s ease; }
   .exp-text { font-size: 0.65rem; color: #888; margin-top: 4px; }
 
   .farm-grid { display: flex; flex-direction: column; gap: 12px; }
@@ -461,7 +462,61 @@
   .egg-result h3 { font-family: 'Hachi Maru Pop', serif; color: #f5d67a; margin-bottom: 8px; }
   .egg-result p { font-size: 0.85rem; color: #ccc; line-height: 1.7; }
 
-  /* 名前入力モーダル */
+  /* 地図 */
+  .map-panel { display: none; }
+  .map-panel.visible { display: block; }
+
+  .map-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .map-stat-item {
+    background: rgba(10,10,20,0.85);
+    border: 1px solid rgba(245,214,122,0.2);
+    border-radius: 12px;
+    padding: 12px 8px;
+    text-align: center;
+  }
+
+  .map-stat-value { font-size: 1.4rem; font-weight: 700; color: #f5d67a; }
+  .map-stat-label { font-size: 0.65rem; color: #888; margin-top: 4px; }
+
+  .prefecture-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+  }
+
+  .pref-item {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    padding: 8px 4px;
+    text-align: center;
+    font-size: 0.7rem;
+    color: #666;
+    transition: all 0.2s;
+  }
+
+  .pref-item.cleared {
+    background: rgba(245,214,122,0.15);
+    border-color: rgba(245,214,122,0.5);
+    color: #f5d67a;
+  }
+
+  .pref-item.partial {
+    background: rgba(142,68,173,0.15);
+    border-color: rgba(142,68,173,0.4);
+    color: #cc99ff;
+  }
+
+  .pref-name { font-size: 0.68rem; margin-bottom: 2px; }
+  .pref-count { font-size: 0.6rem; }
+
+  /* モーダル */
   .modal-overlay {
     position: fixed;
     inset: 0;
@@ -485,19 +540,8 @@
     text-align: center;
   }
 
-  .modal-box h2 {
-    font-family: 'Hachi Maru Pop', serif;
-    font-size: 1.4rem;
-    color: #f5d67a;
-    margin-bottom: 8px;
-  }
-
-  .modal-box p {
-    font-size: 0.85rem;
-    color: #aaa;
-    margin-bottom: 24px;
-    line-height: 1.7;
-  }
+  .modal-box h2 { font-family: 'Hachi Maru Pop', serif; font-size: 1.4rem; color: #f5d67a; margin-bottom: 8px; }
+  .modal-box p { font-size: 0.85rem; color: #aaa; margin-bottom: 24px; line-height: 1.7; }
 
   .modal-input {
     width: 100%;
@@ -530,13 +574,12 @@
 
   .modal-btn:hover { opacity: 0.85; }
 
-  /* レベルアップ演出 */
+  /* レベルアップ */
   .levelup-overlay {
     position: fixed;
     inset: 0;
     background: rgba(0,0,0,0.7);
     z-index: 200;
-    display: flex;
     align-items: center;
     justify-content: center;
     display: none;
@@ -544,10 +587,7 @@
 
   .levelup-overlay.visible { display: flex; }
 
-  .levelup-box {
-    text-align: center;
-    animation: levelupPop 0.5s ease-out;
-  }
+  .levelup-box { text-align: center; animation: levelupPop 0.5s ease-out; }
 
   @keyframes levelupPop {
     from { transform: scale(0.5); opacity: 0; }
@@ -562,16 +602,11 @@
     margin-bottom: 8px;
   }
 
-  .levelup-sub {
-    font-size: 1rem;
-    color: #fff;
-    text-shadow: 1px 1px 4px #000;
-  }
+  .levelup-sub { font-size: 1rem; color: #fff; text-shadow: 1px 1px 4px #000; }
 </style>
 </head>
 <body>
 
-<!-- 名前入力モーダル -->
 <div class="modal-overlay" id="nameModal">
   <div class="modal-box">
     <div style="font-size:3rem;margin-bottom:16px">🎮</div>
@@ -582,7 +617,6 @@
   </div>
 </div>
 
-<!-- レベルアップ演出 -->
 <div class="levelup-overlay" id="levelupOverlay" onclick="this.classList.remove('visible')">
   <div class="levelup-box">
     <div style="font-size:4rem;margin-bottom:16px">⭐✨🌟</div>
@@ -670,7 +704,14 @@
 
     <div class="farm-panel" id="farmTab">
       <div class="trainer-card" id="trainerCard"></div>
-      <div class="farm-grid" id="farmGrid"></div>
+      <div class="farm-sub-tabs">
+        <button class="farm-sub-btn active" onclick="switchFarmTab('monsters')">🐾 モンスター</button>
+        <button class="farm-sub-btn" onclick="switchFarmTab('map')">🗾 制覇マップ</button>
+      </div>
+      <div id="monstersPanel">
+        <div class="farm-grid" id="farmGrid"></div>
+      </div>
+      <div class="map-panel" id="mapPanel"></div>
     </div>
 
   </div>
@@ -758,11 +799,46 @@ const SPECIAL_WARDS = {
   }
 };
 
-// トレーナーレベル設計
-const LEVEL_TABLE = [
-  0, 1, 2, 4, 6, 9, 12, 16, 20, 25, 30,
-  36, 42, 49, 56, 64, 72, 81, 90, 100
+// 都道府県データ
+const PREFECTURES = [
+  { name: '北海道', region: '北海道' },
+  { name: '青森県', region: '東北' }, { name: '岩手県', region: '東北' }, { name: '宮城県', region: '東北' },
+  { name: '秋田県', region: '東北' }, { name: '山形県', region: '東北' }, { name: '福島県', region: '東北' },
+  { name: '茨城県', region: '関東' }, { name: '栃木県', region: '関東' }, { name: '群馬県', region: '関東' },
+  { name: '埼玉県', region: '関東' }, { name: '千葉県', region: '関東' }, { name: '東京都', region: '関東' },
+  { name: '神奈川県', region: '関東' },
+  { name: '新潟県', region: '中部' }, { name: '富山県', region: '中部' }, { name: '石川県', region: '中部' },
+  { name: '福井県', region: '中部' }, { name: '山梨県', region: '中部' }, { name: '長野県', region: '中部' },
+  { name: '岐阜県', region: '中部' }, { name: '静岡県', region: '中部' }, { name: '愛知県', region: '中部' },
+  { name: '三重県', region: '近畿' }, { name: '滋賀県', region: '近畿' }, { name: '京都府', region: '近畿' },
+  { name: '大阪府', region: '近畿' }, { name: '兵庫県', region: '近畿' }, { name: '奈良県', region: '近畿' },
+  { name: '和歌山県', region: '近畿' },
+  { name: '鳥取県', region: '中国' }, { name: '島根県', region: '中国' }, { name: '岡山県', region: '中国' },
+  { name: '広島県', region: '中国' }, { name: '山口県', region: '中国' },
+  { name: '徳島県', region: '四国' }, { name: '香川県', region: '四国' }, { name: '愛媛県', region: '四国' },
+  { name: '高知県', region: '四国' },
+  { name: '福岡県', region: '九州' }, { name: '佐賀県', region: '九州' }, { name: '長崎県', region: '九州' },
+  { name: '熊本県', region: '九州' }, { name: '大分県', region: '九州' }, { name: '宮崎県', region: '九州' },
+  { name: '鹿児島県', region: '九州' }, { name: '沖縄県', region: '九州' },
 ];
+
+// 市区町村→都道府県マッピング
+const CITY_TO_PREF = {
+  '千代田区': '東京都', '中央区': '東京都', '港区': '東京都', '新宿区': '東京都',
+  '文京区': '東京都', '台東区': '東京都', '墨田区': '東京都', '江東区': '東京都',
+  '品川区': '東京都', '目黒区': '東京都', '大田区': '東京都', '世田谷区': '東京都',
+  '渋谷区': '東京都', '中野区': '東京都', '杉並区': '東京都', '豊島区': '東京都',
+  '北区': '東京都', '荒川区': '東京都', '板橋区': '東京都', '練馬区': '東京都',
+  '足立区': '東京都', '葛飾区': '東京都', '江戸川区': '東京都', '東京都内': '東京都',
+  '都島区': '大阪府', '福島区': '大阪府', '此花区': '大阪府', '西区': '大阪府',
+  '港区（大阪）': '大阪府', '大正区': '大阪府', '天王寺区': '大阪府', '浪速区': '大阪府',
+  '西淀川区': '大阪府', '淀川区': '大阪府', '東淀川区': '大阪府', '東成区': '大阪府',
+  '生野区': '大阪府', '旭区': '大阪府', '城東区': '大阪府', '鶴見区': '大阪府',
+  '阿倍野区': '大阪府', '住之江区': '大阪府', '住吉区': '大阪府', '東住吉区': '大阪府',
+  '平野区': '大阪府', '西成区': '大阪府', '大阪市内': '大阪府',
+};
+
+const LEVEL_TABLE = [0, 1, 2, 4, 6, 9, 12, 16, 20, 25, 30, 36, 42, 49, 56, 64, 72, 81, 90, 100];
 
 function getTrainerLevel(adultCount) {
   let level = 1;
@@ -806,9 +882,7 @@ function getUserId() {
   return uid;
 }
 
-function getTrainerName() {
-  return localStorage.getItem('trainerName') || null;
-}
+function getTrainerName() { return localStorage.getItem('trainerName') || null; }
 
 function saveTrainerName() {
   const input = document.getElementById('nameInput').value.trim();
@@ -839,19 +913,92 @@ function countAdults() {
   return Object.values(farm).filter(e => e.stage === 'adult').length;
 }
 
+function getClearedPrefectures() {
+  const farm = getFarmData();
+  const prefSet = new Set();
+  Object.entries(farm).forEach(([city, entry]) => {
+    if (entry.stage === 'adult') {
+      const pref = CITY_TO_PREF[city];
+      if (pref) prefSet.add(pref);
+      else {
+        // 市名から都道府県を推定
+        PREFECTURES.forEach(p => {
+          if (city.includes(p.name.replace('県', '').replace('府', '').replace('都', '').replace('道', ''))) {
+            prefSet.add(p.name);
+          }
+        });
+      }
+    }
+  });
+  return prefSet;
+}
+
+function getPartialPrefectures() {
+  const farm = getFarmData();
+  const prefSet = new Set();
+  Object.entries(farm).forEach(([city, entry]) => {
+    if (entry.stage !== 'adult') {
+      const pref = CITY_TO_PREF[city];
+      if (pref) prefSet.add(pref);
+    }
+  });
+  return prefSet;
+}
+
 function renderTrainerCard() {
   const name = getTrainerName() || 'トレーナー';
   const adultCount = countAdults();
   const { level, progress, needed, percent } = getExpProgress(adultCount);
+  const clearedPrefs = getClearedPrefectures().size;
   const card = document.getElementById('trainerCard');
   card.innerHTML =
     '<div class="trainer-avatar">🎮</div>' +
     '<div class="trainer-info">' +
       '<div class="trainer-name">' + name + '</div>' +
-      '<div class="trainer-level">トレーナー Lv.' + level + '</div>' +
+      '<div class="trainer-level">トレーナー Lv.' + level + ' ｜ 制覇 ' + clearedPrefs + '都道府県</div>' +
       '<div class="exp-bar-wrap"><div class="exp-bar" style="width:' + percent + '%"></div></div>' +
       '<div class="exp-text">大人モンスター ' + progress + ' / ' + needed + ' 匹</div>' +
     '</div>';
+}
+
+function renderMap() {
+  const cleared = getClearedPrefectures();
+  const partial = getPartialPrefectures();
+  const farm = getFarmData();
+
+  const totalMonsters = Object.values(farm).filter(e => e.stage === 'adult').length;
+  const totalPrefs = cleared.size;
+  const totalVisited = Object.keys(farm).length;
+
+  const regions = {};
+  PREFECTURES.forEach(p => {
+    if (!regions[p.region]) regions[p.region] = [];
+    regions[p.region].push(p);
+  });
+
+  let html = '<div class="map-stats">' +
+    '<div class="map-stat-item"><div class="map-stat-value">' + totalMonsters + '</div><div class="map-stat-label">大人モンスター</div></div>' +
+    '<div class="map-stat-item"><div class="map-stat-value">' + totalPrefs + '</div><div class="map-stat-label">制覇都道府県</div></div>' +
+    '<div class="map-stat-item"><div class="map-stat-value">' + totalVisited + '</div><div class="map-stat-label">訪問地域</div></div>' +
+  '</div>';
+
+  Object.entries(regions).forEach(([region, prefs]) => {
+    const clearedCount = prefs.filter(p => cleared.has(p.name)).length;
+    html += '<div style="margin-bottom:12px">' +
+      '<div style="font-size:0.7rem;color:#888;margin-bottom:6px;letter-spacing:0.1em">' + region + '　' + clearedCount + '/' + prefs.length + '</div>' +
+      '<div class="prefecture-grid">';
+    prefs.forEach(p => {
+      const isCleared = cleared.has(p.name);
+      const isPartial = partial.has(p.name);
+      const cls = isCleared ? 'pref-item cleared' : isPartial ? 'pref-item partial' : 'pref-item';
+      const icon = isCleared ? '⭐' : isPartial ? '🥚' : '';
+      html += '<div class="' + cls + '"><div class="pref-name">' + p.name.replace('県', '').replace('府', '').replace('都', '').replace('道', '') + '</div>' +
+        '<div class="pref-count">' + icon + '</div></div>';
+    });
+    html += '</div></div>';
+  });
+
+  document.getElementById('mapPanel').innerHTML = html;
 }
 
 function formatTimer(ms) {
@@ -865,6 +1012,7 @@ function formatTimer(ms) {
 }
 
 let currentTab = 'generate';
+let currentFarmTab = 'monsters';
 let detectedCity = '';
 let detectedWeather = '';
 let detectedTemp = '';
@@ -877,19 +1025,16 @@ function showHatchLoading(isEgg) {
   const msg = document.getElementById('hatchMessage');
   const sub = document.getElementById('hatchSub');
   const particles = document.getElementById('hatchParticles');
-
   el.classList.add('visible');
-
   if (isEgg) {
     emoji.textContent = '🥚';
     emoji.className = 'hatch-emoji shaking';
     msg.textContent = '🥚 卵が割れています...';
     sub.textContent = 'もうすぐ生まれてきます！';
     particles.textContent = '✨ 💫 ✨';
-
     setTimeout(() => {
       emoji.textContent = '🐣';
-      emoji.className = 'hatch-emoji bounce';
+      emoji.className = 'hatch-emoji bouncing';
       msg.textContent = '🐣 生まれてきています...！';
       sub.textContent = 'もう少しだけ待ってください';
       particles.textContent = '🌟 ⭐ 🌟';
@@ -900,7 +1045,6 @@ function showHatchLoading(isEgg) {
     msg.textContent = '🌟 進化しています...！';
     sub.textContent = '姿が変わっていきます...';
     particles.textContent = '⚡ 🌈 ⚡';
-
     setTimeout(() => {
       emoji.textContent = '🌟';
       msg.textContent = '⭐ もうすぐ完成です...！';
@@ -911,8 +1055,7 @@ function showHatchLoading(isEgg) {
 
 function hideHatchLoading() {
   document.getElementById('hatchLoading').classList.remove('visible');
-  const emoji = document.getElementById('hatchEmoji');
-  emoji.className = 'hatch-emoji';
+  document.getElementById('hatchEmoji').className = 'hatch-emoji';
 }
 
 function showLevelUp(newLevel) {
@@ -926,7 +1069,6 @@ function showLevelUp(newLevel) {
 async function detectLocation() {
   document.getElementById('detectedCity').textContent = '取得中...';
   document.getElementById('eggBtn').disabled = true;
-
   try {
     const pos = await new Promise((resolve, reject) =>
       navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 8000 })
@@ -968,7 +1110,6 @@ async function pickupEgg() {
   document.getElementById('eggResult').classList.remove('visible');
   document.getElementById('resultCard').classList.remove('visible');
   document.getElementById('errorState').classList.remove('visible');
-
   try {
     const res = await fetch('/api/egg', {
       method: 'POST',
@@ -977,7 +1118,6 @@ async function pickupEgg() {
     });
     const data = await res.json();
     document.getElementById('loadingState').classList.remove('visible');
-
     if (data.status === 'egg_picked') {
       const farm = getFarmData();
       farm[detectedCity] = { stage: 'egg', egg: data.egg, weatherInfo: detectedWeather, temp: detectedTemp };
@@ -1007,16 +1147,12 @@ function showEggResult(title, text) {
 async function hatchNow(city) {
   if (hatchingCities[city]) return;
   hatchingCities[city] = true;
-
   const farm = getFarmData();
   const entry = farm[city];
   if (!entry) { hatchingCities[city] = false; return; }
-
   const isEgg = entry.stage === 'egg';
   const prevAdultCount = countAdults();
-
   showHatchLoading(isEgg);
-
   try {
     if (isEgg) {
       const res = await fetch('/api/generate', {
@@ -1042,19 +1178,15 @@ async function hatchNow(city) {
         const f = getFarmData();
         f[city] = { ...f[city], stage: 'adult', monster };
         saveFarmData(f);
-
         const newAdultCount = countAdults();
         const prevLevel = getTrainerLevel(prevAdultCount);
         const newLevel = getTrainerLevel(newAdultCount);
-        if (newLevel > prevLevel) {
-          showLevelUp(newLevel);
-        }
+        if (newLevel > prevLevel) showLevelUp(newLevel);
       }
     }
   } finally {
     hatchingCities[city] = false;
   }
-
   hideHatchLoading();
   renderFarm();
   if (currentTab === 'generate') {
@@ -1073,65 +1205,62 @@ function switchTab(tab) {
   if (tab === 'farm') renderFarm();
 }
 
+function switchFarmTab(tab) {
+  currentFarmTab = tab;
+  const btns = document.querySelectorAll('.farm-sub-btn');
+  btns[0].classList.toggle('active', tab === 'monsters');
+  btns[1].classList.toggle('active', tab === 'map');
+  document.getElementById('monstersPanel').style.display = tab === 'monsters' ? 'block' : 'none';
+  document.getElementById('mapPanel').classList.toggle('visible', tab === 'map');
+  if (tab === 'map') renderMap();
+}
+
 function renderFarm() {
   renderTrainerCard();
   const farm = getFarmData();
   const grid = document.getElementById('farmGrid');
   if (!grid) return;
-
   if (Object.keys(farm).length === 0) {
     grid.innerHTML = '<div class="farm-empty">まだモンスターがいません<br>現地に行って卵を拾おう！</div>';
     return;
   }
-
   const now = Date.now();
-
   grid.innerHTML = Object.entries(farm).map(([city, entry]) => {
     const egg = entry.egg;
-    let iconHtml = '';
-    let statusText = '';
-    let timerHtml = '';
-    let cardClass = 'farm-card';
-
+    let iconHtml = '', statusText = '', timerHtml = '', cardClass = 'farm-card';
     if (entry.stage === 'egg') {
       const remaining = egg.hatchAt - now;
       const ready = remaining <= 0;
       iconHtml = '<div class="farm-icon">🥚</div>';
       statusText = '卵';
       cardClass += ' egg';
-      if (ready) {
-        timerHtml = '<button class="hatch-btn" onclick="event.stopPropagation();hatchNow(\'' + city + '\')">🥚 孵化させる</button>';
-      } else {
-        timerHtml = '<div class="farm-timer">孵化まで ' + formatTimer(remaining) + '</div>';
-      }
+      timerHtml = ready
+        ? '<button class="hatch-btn" onclick="event.stopPropagation();hatchNow(\'' + city + '\')">🥚 孵化させる</button>'
+        : '<div class="farm-timer">孵化まで ' + formatTimer(remaining) + '</div>';
     } else if (entry.stage === 'child') {
       const m = entry.monster;
       const imgSrc = m && m.imageUrl;
       iconHtml = imgSrc
-        ? '<div class="farm-icon"><img src="' + imgSrc + '" alt="' + (m ? m.name || '' : '') + '" /></div>'
+        ? '<div class="farm-icon"><img src="' + imgSrc + '" alt="" /></div>'
         : '<div class="farm-icon">' + (m ? m.emoji || '👶' : '👶') + '</div>';
       const remaining = egg.growAt - now;
       const ready = remaining <= 0;
       statusText = '👶 子供';
       cardClass += ' child';
-      if (ready) {
-        timerHtml = '<button class="hatch-btn" onclick="event.stopPropagation();hatchNow(\'' + city + '\')">⭐ 進化させる</button>';
-      } else {
-        timerHtml = '<div class="farm-timer">大人まで ' + formatTimer(remaining) + '</div>';
-      }
+      timerHtml = ready
+        ? '<button class="hatch-btn" onclick="event.stopPropagation();hatchNow(\'' + city + '\')">⭐ 進化させる</button>'
+        : '<div class="farm-timer">大人まで ' + formatTimer(remaining) + '</div>';
     } else {
       const m = entry.monster;
       const imgSrc = m && m.imageUrl;
       iconHtml = imgSrc
-        ? '<div class="farm-icon"><img src="' + imgSrc + '" alt="' + (m ? m.name || '' : '') + '" /></div>'
+        ? '<div class="farm-icon"><img src="' + imgSrc + '" alt="" /></div>'
         : '<div class="farm-icon">' + (m ? m.emoji || '👾' : '👾') + '</div>';
       statusText = '⭐ 大人';
       cardClass += ' adult';
     }
-
     const m = entry.monster;
     const name = m ? m.name : city + 'の卵';
-
     return '<div class="' + cardClass + '" onclick="showFarmMonster(\'' + city + '\')">' +
       iconHtml +
       '<div class="farm-info">' +
@@ -1139,13 +1268,11 @@ function renderFarm() {
         '<div class="farm-name">' + name + '</div>' +
         '<div class="farm-status">' + statusText + '</div>' +
         timerHtml +
-      '</div>' +
-    '</div>';
+      '</div></div>';
   }).join('');
-
   if (farmTimerInterval) clearInterval(farmTimerInterval);
   farmTimerInterval = setInterval(() => {
-    if (currentTab === 'farm') renderFarm();
+    if (currentTab === 'farm' && currentFarmTab === 'monsters') renderFarm();
   }, 1000);
 }
 
@@ -1162,14 +1289,10 @@ function renderMonster(m) {
   document.getElementById('monName').textContent = m.name;
   document.getElementById('monConcept').textContent = m.concept;
   document.getElementById('monLore').textContent = m.lore;
-
   const stageBadge = document.getElementById('monStageBadge');
-  if (m.stage === 'child') {
-    stageBadge.innerHTML = '<span class="stage-badge child">👶 子供</span>';
-  } else {
-    stageBadge.innerHTML = '<span class="stage-badge adult">⭐ 大人</span>';
-  }
-
+  stageBadge.innerHTML = m.stage === 'child'
+    ? '<span class="stage-badge child">👶 子供</span>'
+    : '<span class="stage-badge adult">⭐ 大人</span>';
   const imgEl = document.getElementById('monIconImg');
   const emojiEl = document.getElementById('monEmoji');
   if (m.imageUrl) {
@@ -1186,36 +1309,21 @@ function renderMonster(m) {
     emojiEl.style.display = 'block';
     emojiEl.textContent = m.emoji || '👾';
   }
-
-  const typesEl = document.getElementById('monTypes');
-  typesEl.innerHTML = (m.types || []).map(t => {
+  document.getElementById('monTypes').innerHTML = (m.types || []).map(t => {
     const color = TYPE_COLORS[t] || '#ffffff';
     return '<span class="type-badge" style="border-color:' + color + ';color:' + color + '">' + t + 'タイプ</span>';
   }).join('');
-
   const stats = m.stats || {};
   document.getElementById('monStats').innerHTML = [
-    { label: 'HP', value: stats.hp },
-    { label: 'ATK', value: stats.atk },
-    { label: 'DEF', value: stats.def },
-    { label: 'SPD', value: stats.spd },
-  ].map(s =>
-    '<div class="stat-item"><div class="stat-label">' + s.label + '</div><div class="stat-value">' + (s.value || '—') + '</div></div>'
-  ).join('');
-
-  const weatherEl = document.getElementById('monWeather');
-  const strongTags = (m.weatherStrong || []).map(w =>
-    '<span class="weather-tag strong">◎ ' + (WEATHER_LABELS[w] || w) + '</span>'
-  ).join('');
-  const weakTags = (m.weatherWeak || []).map(w =>
-    '<span class="weather-tag weak">✕ ' + (WEATHER_LABELS[w] || w) + '</span>'
-  ).join('');
-  weatherEl.innerHTML = strongTags + weakTags;
-
+    { label: 'HP', value: stats.hp }, { label: 'ATK', value: stats.atk },
+    { label: 'DEF', value: stats.def }, { label: 'SPD', value: stats.spd },
+  ].map(s => '<div class="stat-item"><div class="stat-label">' + s.label + '</div><div class="stat-value">' + (s.value || '—') + '</div></div>').join('');
+  const strongTags = (m.weatherStrong || []).map(w => '<span class="weather-tag strong">◎ ' + (WEATHER_LABELS[w] || w) + '</span>').join('');
+  const weakTags = (m.weatherWeak || []).map(w => '<span class="weather-tag weak">✕ ' + (WEATHER_LABELS[w] || w) + '</span>').join('');
+  document.getElementById('monWeather').innerHTML = strongTags + weakTags;
   document.getElementById('resultCard').classList.add('visible');
 }
 
-// 初期化
 const trainerName = getTrainerName();
 if (!trainerName) {
   document.getElementById('nameModal').classList.remove('hidden');
