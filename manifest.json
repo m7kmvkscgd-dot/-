@@ -1,0 +1,21 @@
+{
+  "name": "ご当地モンスター",
+  "short_name": "ご当地",
+  "description": "現地に行って卵を拾おう！",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0d1117",
+  "theme_color": "#f5d67a",
+  "icons": [
+    {
+      "src": "/icon.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg"
+    },
+    {
+      "src": "/icon.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg"
+    }
+  ]
+}
