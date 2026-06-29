@@ -6,23 +6,20 @@ async function redisGet(key) {
     headers: { Authorization: 'Bearer ' + process.env.UPSTASH_REDIS_REST_TOKEN }
   });
   const data = await res.json();
- if (!data.result) return null;
-const parsed = JSON.parse(data.result);
-return typeof parsed === 'string' ? JSON.parse(parsed) : parsed;
+  if (!data.result) return null;
+  return JSON.parse(data.result);
 }
 
 async function redisSet(key, value) {
   const url = process.env.UPSTASH_REDIS_REST_URL + '/set/' + encodeURIComponent(key);
-  const res = await fetch(url, {
+  await fetch(url, {
     method: 'POST',
     headers: {
       Authorization: 'Bearer ' + process.env.UPSTASH_REDIS_REST_TOKEN,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify([JSON.stringify(value)]),
+    body: JSON.stringify(value),
   });
-  const data = await res.json();
-  return data;
 }
 
 module.exports = async function handler(req, res) {
@@ -120,9 +117,7 @@ module.exports = async function handler(req, res) {
       monster.imageError = imgError.message;
     }
 
-    const saveResult = await redisSet(cacheKey, monster);
-
-
+    await redisSet(cacheKey, monster);
     return res.status(200).json(monster);
   } catch (e) {
     return res.status(500).json({ error: e.message });
