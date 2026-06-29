@@ -985,7 +985,18 @@ function getUserId() {
 }
 
 function getTrainerName() { return localStorage.getItem('trainerName') || null; }
-const AVATARS = ['🧙', '🗺️', '🥷', '🦊', '🐉', '👑', '🌟', '🧝', '🍀', '🦅', '🏔️', '🌊', '🔮', '🎭', '🦁'];
+const PERSONALITIES = [
+  'やんちゃ','いさましい','がむしゃら','まっすぐ','ほんきだし','おてんば','はりきり','じょうぶ','つよがり','あばれんぼ',
+  'おっとり','マイペース','なまけもの','ぼんやり','のんき','ゆうゆう','あわてんぼ','ぐうたら','うとうと','ほのぼの',
+  'しんちょう','ようじんぶかい','おくびょう','びびり','こわがり','かんがえすぎ','よみうり','したたか','ぬかりない','ぬけめない',
+  'あまえんぼ','てれや','やさしい','おせっかい','なきむし','ひとなつっこい','めんどうみがいい','すなお','じゅんすい','こころやさしい',
+  'ひょうきん','くいしんぼ','めだちたがり','負けずぎらい','きままな','わがまま','おしゃべり','むくち','ふしぎちゃん','こだわりや'
+];
+
+function getRandomPersonality() {
+  return PERSONALITIES[Math.floor(Math.random() * PERSONALITIES.length)];
+}
+  const AVATARS = ['🧙', '🗺️', '🥷', '🦊', '🐉', '👑', '🌟', '🧝', '🍀', '🦅', '🏔️', '🌊', '🔮', '🎭', '🦁'];
 
 function getAvatar() { return localStorage.getItem('trainerAvatar') || '🎮'; }
 
@@ -1290,7 +1301,7 @@ async function hatchNow(city) {
       const monster = await res.json();
       if (!monster.error) {
         const f = getFarmData();
-        f[city] = { ...f[city], stage: 'child', monster };
+       f[city] = { ...f[city], stage: 'child', monster, personality: getRandomPersonality() };
         saveFarmData(f);
       }
     } else if (entry.stage === 'child') {
@@ -1393,7 +1404,7 @@ function renderFarm() {
       '<div class="farm-info">' +
         '<div class="farm-city">' + city + '</div>' +
         '<div class="farm-name">' + name + '</div>' +
-        '<div class="farm-status">' + statusText + '</div>' +
+        '<div class="farm-status">' + statusText + (entry.personality ? '　' + entry.personality : '') + '</div>' +
         timerHtml +
       '</div></div>';
   }).join('');
