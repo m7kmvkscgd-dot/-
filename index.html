@@ -573,6 +573,66 @@
   }
 
   .modal-btn:hover { opacity: 0.85; }
+  /* アバター選択 */
+  .avatar-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    display: none;
+  }
+
+  .avatar-modal.visible { display: flex; }
+
+  .avatar-box {
+    background: #0d1117;
+    border: 1px solid rgba(245,214,122,0.4);
+    border-radius: 20px;
+    padding: 24px;
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+  }
+
+  .avatar-box h3 {
+    font-family: 'Hachi Maru Pop', serif;
+    color: #f5d67a;
+    margin-bottom: 16px;
+  }
+
+  .avatar-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .avatar-item {
+    font-size: 2rem;
+    padding: 8px;
+    border-radius: 10px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .avatar-item:hover { border-color: #f5d67a; background: rgba(245,214,122,0.1); }
+  .avatar-item.selected { border-color: #f5d67a; background: rgba(245,214,122,0.2); }
+
+  .avatar-close {
+    padding: 10px 20px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 8px;
+    color: #aaa;
+    cursor: pointer;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 0.85rem;
+  }
 
   /* レベルアップ */
   .levelup-overlay {
@@ -616,7 +676,13 @@
     <button class="modal-btn" onclick="saveTrainerName()">🌟 冒険を始める</button>
   </div>
 </div>
-
+<div class="avatar-modal" id="avatarModal">
+  <div class="avatar-box">
+    <h3>アイコンを選ぶ</h3>
+    <div class="avatar-grid" id="avatarGrid"></div>
+    <button class="avatar-close" onclick="closeAvatarModal()">閉じる</button>
+  </div>
+</div>
 <div class="levelup-overlay" id="levelupOverlay" onclick="this.classList.remove('visible')">
   <div class="levelup-box">
     <div style="font-size:4rem;margin-bottom:16px">⭐✨🌟</div>
@@ -883,7 +949,28 @@ function getUserId() {
 }
 
 function getTrainerName() { return localStorage.getItem('trainerName') || null; }
+const AVATARS = ['🧙', '🗺️', '🥷', '🦊', '🐉', '👑', '🌟', '🧝', '🍀', '🦅', '🏔️', '🌊', '🔮', '🎭', '🦁'];
 
+function getAvatar() { return localStorage.getItem('trainerAvatar') || '🎮'; }
+
+function setAvatar(emoji) {
+  localStorage.setItem('trainerAvatar', emoji);
+  closeAvatarModal();
+  renderTrainerCard();
+}
+
+function openAvatarModal() {
+  const current = getAvatar();
+  const grid = document.getElementById('avatarGrid');
+  grid.innerHTML = AVATARS.map(a =>
+    '<div class="avatar-item' + (a === current ? ' selected' : '') + '" onclick="setAvatar(\'' + a + '\')">' + a + '</div>'
+  ).join('');
+  document.getElementById('avatarModal').classList.add('visible');
+}
+
+function closeAvatarModal() {
+  document.getElementById('avatarModal').classList.remove('visible');
+}
 function saveTrainerName() {
   const input = document.getElementById('nameInput').value.trim();
   if (!input) return;
@@ -949,10 +1036,10 @@ function renderTrainerCard() {
   const name = getTrainerName() || 'トレーナー';
   const adultCount = countAdults();
   const { level, progress, needed, percent } = getExpProgress(adultCount);
-  const clearedPrefs = getClearedPrefectures().size;
+const clearedPrefs = getClearedPrefectures().size;
   const card = document.getElementById('trainerCard');
   card.innerHTML =
-    '<div class="trainer-avatar">🎮</div>' +
+    '<div class="trainer-avatar" onclick="openAvatarModal()" style="cursor:pointer">' + getAvatar() + '</div>' +
     '<div class="trainer-info">' +
       '<div class="trainer-name">' + name + '</div>' +
       '<div class="trainer-level">トレーナー Lv.' + level + ' ｜ 制覇 ' + clearedPrefs + '都道府県</div>' +
