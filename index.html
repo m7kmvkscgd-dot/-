@@ -1244,6 +1244,7 @@ async function hatchNow(city) {
   if (!entry) { hatchingCities[city] = false; return; }
   const isEgg = entry.stage === 'egg';
   const prevAdultCount = countAdults();
+  switchTab('generate');
   showHatchLoading(isEgg);
   try {
     if (isEgg) {
