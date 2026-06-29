@@ -1,10 +1,25 @@
 const { put } = require('@vercel/blob');
-const { Redis } = require('@upstash/redis');
 
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN,
-});
+async function redisGet(key) {
+  const url = process.env.UPSTASH_REDIS_REST_URL + '/get/' + encodeURIComponent(key);
+  const res = await fetch(url, {
+    headers: { Authorization: 'Bearer ' + process.env.UPSTASH_REDIS_REST_TOKEN }
+  });
+  const data = await res.json();
+  return data.result ? JSON.parse(data.result) : null;
+}
+
+async function redisSet(key, value) {
+  const url = process.env.UPSTASH_REDIS_REST_URL + '/set/' + encodeURIComponent(key);
+  await fetch(url, {
+    method: 'POST',
+    headers: {
+      Authorization: 'Bearer ' + process.env.UPSTASH_REDIS_REST_TOKEN,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(JSON.stringify(value)),
+  });
+}
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -17,8 +32,7 @@ module.exports = async function handler(req, res) {
 
   const cacheKey = 'monster:' + (stage || 'adult') + ':' + city;
 
-  // キャッシュ確認
-  const cached = await redis.get(cacheKey);
+  const cached = await redisGet(cacheKey);
   if (cached) {
     return res.status(200).json(cached);
   }
@@ -28,7 +42,7 @@ module.exports = async function handler(req, res) {
     const isChild = stage === 'child';
 
     const stageNote = isChild
-      ? 'This is the CHILD form. Make it look young, small, cute, and less powerful than the adult form. The design should hint at what it will become.'
+      ? 'This is the CHILD form. Make it look young, small, cute, and less powerful than the adult form.'
       : 'This is the ADULT form. Make it look mature, powerful, and fully evolved.';
 
     const content = 'You are a game designer. Design a local monster for the Japanese city of ' + city + '. Research its history, geography, local specialties, legends, and modern characteristics. Current weather at player location: ' + weather + '. ' + stageNote + ' Output ONLY a valid JSON object with no explanation, no markdown, no code blocks. The JSON must use double quotes only. Format: {"name":"katakana monster name","emoji":"single emoji","city":"' + city + '","concept":"concept in Japanese","types":["type1","type2"],"stats":{"hp":100,"atk":50,"def":40,"spd":35},"weatherStrong":["clear","rain"],"weatherWeak":["snow","thunder"],"promptEn":["feature1","feature2","feature3","feature4","feature5","512x512px square format, soft gradient background matching the monster color theme NOT transparent, pokemon-style cute chibi character centered taking 70% of image, simple beautiful background with nature or environment elements matching the monster type, Japanese anime RPG game art","color palette and mood"],"lore":"lore in Japanese"}';
@@ -59,7 +73,6 @@ module.exports = async function handler(req, res) {
     const monster = JSON.parse(match[0]);
     monster.stage = stage || 'adult';
 
-    // gpt-image-1で画像生成
     try {
       const imagePrompt = (monster.promptEn || []).join(', ');
       const imageRes = await fetch('https://api.openai.com/v1/images/generations', {
@@ -91,8 +104,7 @@ module.exports = async function handler(req, res) {
       monster.imageError = imgError.message;
     }
 
-    // Redisに保存
-    await redis.set(cacheKey, monster);
+    await redisSet(cacheKey, monster);
 
     return res.status(200).json(monster);
   } catch (e) {
