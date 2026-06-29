@@ -7,7 +7,9 @@ async function redisGet(key) {
     headers: { Authorization: 'Bearer ' + process.env.UPSTASH_REDIS_REST_TOKEN }
   });
   const data = await res.json();
-  return data.result ? JSON.parse(data.result) : null;
+  if (!data.result) return null;
+  const parsed = JSON.parse(data.result);
+  return typeof parsed === 'string' ? JSON.parse(parsed) : parsed;
 }
 
 async function redisSet(key, value) {
@@ -18,7 +20,7 @@ async function redisSet(key, value) {
       Authorization: 'Bearer ' + process.env.UPSTASH_REDIS_REST_TOKEN,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(JSON.stringify(value)),
+    body: JSON.stringify([JSON.stringify(value)]),
   });
 }
 
@@ -26,13 +28,10 @@ module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
-
   const { action, city, userId } = req.body || {};
-
   if (!userId || !city) {
     return res.status(400).json({ error: 'userId and city are required' });
   }
-
   if (action === 'pickup') {
     const existingEgg = await redisGet('egg:' + userId + ':' + city);
     if (existingEgg) {
@@ -49,7 +48,6 @@ module.exports = async function handler(req, res) {
     await redisSet('egg:' + userId + ':' + city, egg);
     return res.status(200).json({ status: 'egg_picked', egg });
   }
-
   if (action === 'check') {
     const egg = await redisGet('egg:' + userId + ':' + city);
     if (!egg) {
@@ -64,6 +62,5 @@ module.exports = async function handler(req, res) {
     }
     return res.status(200).json({ status: 'adult', egg });
   }
-
   return res.status(400).json({ error: 'Invalid action' });
 };
