@@ -1,5 +1,5 @@
-const EGG_HATCH_MS = 1 * 60 * 1000;
-const CHILD_GROW_MS = 3 * 60 * 1000;
+const EGG_HATCH_MS = 60 * 60 * 1000;
+const CHILD_GROW_MS = 3 * 60 * 60 * 1000;
 
 async function redisGet(key) {
   const url = process.env.UPSTASH_REDIS_REST_URL + '/get/' + encodeURIComponent(key);
