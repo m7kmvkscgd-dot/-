@@ -284,6 +284,12 @@
 
   .section-content { font-size: 0.88rem; line-height: 1.8; color: #f0ebe0; }
 
+  .lore-text {
+    font-size: 0.8rem;
+    line-height: 1.8;
+    color: #ccc;
+  }
+
   .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
 
   .stat-item {
@@ -301,33 +307,6 @@
   .weather-tag { padding: 4px 10px; border-radius: 999px; font-size: 0.7rem; border: 1px solid; }
   .weather-tag.strong { border-color: #27ae60; color: #27ae60; }
   .weather-tag.weak { border-color: #c0392b; color: #c0392b; }
-
-  .prompt-box {
-    background: rgba(0,0,0,0.4);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 8px;
-    padding: 14px;
-    font-size: 0.75rem;
-    line-height: 1.7;
-    color: #ccc;
-    font-family: monospace;
-    white-space: pre-wrap;
-    word-break: break-all;
-  }
-
-  .copy-btn {
-    margin-top: 8px;
-    padding: 8px 16px;
-    background: transparent;
-    border: 1px solid rgba(255,255,255,0.2);
-    border-radius: 6px;
-    color: #888;
-    font-size: 0.75rem;
-    cursor: pointer;
-    transition: border-color 0.15s, color 0.15s;
-  }
-
-  .copy-btn:hover { border-color: #f0ebe0; color: #f0ebe0; }
 
   .zukan-panel { width: 100%; display: none; }
   .zukan-panel.visible { display: block; }
@@ -446,21 +425,9 @@
           <div class="weather-affinity" id="monWeather"></div>
         </div>
 
-        <div class="section">
-          <div class="section-label">AIイラスト生成プロンプト（日本語）</div>
-          <div class="prompt-box" id="monPromptJa"></div>
-          <button class="copy-btn" onclick="copyPrompt('ja')">コピー</button>
-        </div>
-
-        <div class="section">
-          <div class="section-label">AIイラスト生成プロンプト（English）</div>
-          <div class="prompt-box" id="monPromptEn"></div>
-          <button class="copy-btn" onclick="copyPrompt('en')">コピー</button>
-        </div>
-
         <div class="section" style="margin-bottom:0">
-          <div class="section-label">元ネタ</div>
-          <div class="section-content" id="monLore"></div>
+          <div class="section-label">由来・伝承</div>
+          <div class="lore-text" id="monLore"></div>
         </div>
       </div>
     </div>
@@ -493,8 +460,6 @@ const WEATHER_CODES = {
 };
 
 let history = [];
-let lastPromptJa = '';
-let lastPromptEn = '';
 let capturedWeatherType = '';
 let capturedTemp = '';
 let currentTab = 'generate';
@@ -711,11 +676,6 @@ function renderMonster(m) {
   ).join('');
   weatherEl.innerHTML = strongTags + weakTags;
 
-  lastPromptJa = (m.promptJa || []).map((p, i) => (i + 1) + '. ' + p).join('\n');
-  lastPromptEn = (m.promptEn || []).map((p, i) => (i + 1) + '. ' + p).join('\n');
-  document.getElementById('monPromptJa').textContent = lastPromptJa;
-  document.getElementById('monPromptEn').textContent = lastPromptEn;
-
   document.getElementById('resultCard').classList.add('visible');
 }
 
@@ -727,16 +687,6 @@ function renderHistory() {
   panel.innerHTML = history.map(c =>
     '<span class="history-chip" onclick="generate(\'' + c + '\')">' + c + '</span>'
   ).join('');
-}
-
-function copyPrompt(lang) {
-  const text = lang === 'ja' ? lastPromptJa : lastPromptEn;
-  navigator.clipboard.writeText(text).then(() => {
-    const btns = document.querySelectorAll('.copy-btn');
-    const idx = lang === 'ja' ? 0 : 1;
-    btns[idx].textContent = 'コピー完了';
-    setTimeout(() => btns[idx].textContent = 'コピー', 1500);
-  });
 }
 
 document.getElementById('cityInput').addEventListener('keydown', e => {
