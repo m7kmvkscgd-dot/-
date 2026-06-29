@@ -241,6 +241,31 @@
 
   .card.visible { display: block; }
 
+  .monster-form-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .monster-form-btn {
+    flex: 1;
+    padding: 8px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    color: #aaa;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .monster-form-btn.active {
+    background: rgba(245,214,122,0.15);
+    border-color: #f5d67a;
+    color: #f5d67a;
+  }
+
   .card-header {
     display: flex;
     align-items: flex-start;
@@ -355,7 +380,6 @@
   }
   .move-power { font-size: 0.75rem; color: #f5d67a; font-weight: 700; }
 
-  /* 牧場・地図 */
   .farm-panel { width: 100%; display: none; }
   .farm-panel.visible { display: block; }
 
@@ -486,7 +510,6 @@
   .egg-result h3 { font-family: 'Hachi Maru Pop', serif; color: #f5d67a; margin-bottom: 8px; }
   .egg-result p { font-size: 0.85rem; color: #ccc; line-height: 1.7; }
 
-  /* 地図 */
   .map-panel { display: none; }
   .map-panel.visible { display: block; }
 
@@ -540,7 +563,6 @@
   .pref-name { font-size: 0.68rem; margin-bottom: 2px; }
   .pref-count { font-size: 0.6rem; }
 
-  /* モーダル */
   .modal-overlay {
     position: fixed;
     inset: 0;
@@ -761,6 +783,10 @@
       </div>
 
       <div class="card" id="resultCard">
+        <div class="monster-form-tabs" id="monsterFormTabs" style="display:none">
+          <button class="monster-form-btn active" id="adultTabBtn" onclick="switchMonsterForm('adult')">⭐ 大人</button>
+          <button class="monster-form-btn" id="childTabBtn" onclick="switchMonsterForm('child')">👶 子供</button>
+        </div>
         <div class="card-header">
           <div class="monster-icon-wrap">
             <img class="monster-icon-img" id="monIconImg" src="" alt="" />
@@ -1170,6 +1196,8 @@ let detectedWeather = '';
 let detectedTemp = '';
 let farmTimerInterval = null;
 let hatchingCities = {};
+let currentMonsterData = null;
+let currentChildData = null;
 
 function showHatchLoading(isEgg) {
   const el = document.getElementById('hatchLoading');
@@ -1216,6 +1244,20 @@ function showLevelUp(newLevel) {
   document.getElementById('levelupSub').textContent = 'トレーナーレベルが上がった！';
   overlay.classList.add('visible');
   setTimeout(() => overlay.classList.remove('visible'), 3000);
+}
+
+function switchMonsterForm(form) {
+  const adultBtn = document.getElementById('adultTabBtn');
+  const childBtn = document.getElementById('childTabBtn');
+  if (form === 'adult') {
+    adultBtn.classList.add('active');
+    childBtn.classList.remove('active');
+    if (currentMonsterData) renderMonsterContent(currentMonsterData);
+  } else {
+    childBtn.classList.add('active');
+    adultBtn.classList.remove('active');
+    if (currentChildData) renderMonsterContent(currentChildData);
+  }
 }
 
 async function detectLocation() {
@@ -1283,7 +1325,7 @@ async function pickupEgg() {
     } else if (data.status === 'already_have_egg') {
       showEggResult('🥚 すでに卵があります', detectedCity + 'の卵はすでに持っています。牧場で確認してください。');
     } else if (data.status === 'already_generated') {
-      renderMonster(data.monster);
+      renderMonster(data.monster, null);
     }
   } catch(e) {
     document.getElementById('loadingState').classList.remove('visible');
@@ -1334,7 +1376,7 @@ async function hatchNow(city) {
       const monster = await res.json();
       if (!monster.error) {
         const f = getFarmData();
-        f[city] = { ...f[city], stage: 'adult', monster };
+        f[city] = { ...f[city], stage: 'adult', monster, childMonster: entry.monster };
         saveFarmData(f);
         const newAdultCount = countAdults();
         const prevLevel = getTrainerLevel(prevAdultCount);
@@ -1349,7 +1391,10 @@ async function hatchNow(city) {
   renderFarm();
   if (currentTab === 'generate') {
     const f = getFarmData();
-    if (f[city] && f[city].monster) renderMonster(f[city].monster);
+    const entry2 = f[city];
+    if (entry2 && entry2.monster) {
+      renderMonster(entry2.monster, entry2.childMonster || null);
+    }
   }
 }
 
@@ -1439,10 +1484,29 @@ function showFarmMonster(city) {
   const entry = farm[city];
   if (!entry || !entry.monster) return;
   switchTab('generate');
-  renderMonster(entry.monster);
+  renderMonster(entry.monster, entry.childMonster || null);
 }
 
-function renderMonster(m) {
+function renderMonster(m, childMonster) {
+  currentMonsterData = m;
+  currentChildData = childMonster || null;
+
+  const tabs = document.getElementById('monsterFormTabs');
+  const adultBtn = document.getElementById('adultTabBtn');
+  const childBtn = document.getElementById('childTabBtn');
+
+  if (m.stage === 'adult' && childMonster) {
+    tabs.style.display = 'flex';
+    adultBtn.classList.add('active');
+    childBtn.classList.remove('active');
+  } else {
+    tabs.style.display = 'none';
+  }
+
+  renderMonsterContent(m);
+}
+
+function renderMonsterContent(m) {
   document.getElementById('monCity').textContent = m.city;
   document.getElementById('monName').textContent = m.name;
   document.getElementById('monConcept').textContent = m.concept;
