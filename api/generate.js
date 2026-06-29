@@ -17,7 +17,7 @@ async function redisSet(key, value) {
       Authorization: 'Bearer ' + process.env.UPSTASH_REDIS_REST_TOKEN,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(JSON.stringify(value)),
+    body: JSON.stringify([JSON.stringify(value)]),
   });
 }
 
@@ -77,7 +77,6 @@ module.exports = async function handler(req, res) {
     let monster = JSON.parse(match[0]);
     monster.stage = stage || 'adult';
 
-    // 大人の場合は子供の名前・lore・conceptを引き継ぐ
     if (!isChild && childMonster) {
       monster.name = childMonster.name;
       monster.concept = childMonster.concept;
