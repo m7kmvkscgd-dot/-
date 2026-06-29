@@ -136,6 +136,70 @@
   .loading-state { text-align: center; padding: 32px; display: none; }
   .loading-state.visible { display: block; }
 
+  .hatch-loading {
+    width: 100%;
+    background: rgba(142,68,173,0.15);
+    border: 1px solid rgba(142,68,173,0.4);
+    border-radius: 16px;
+    padding: 32px 24px;
+    text-align: center;
+    display: none;
+  }
+
+  .hatch-loading.visible { display: block; }
+
+  .hatch-emoji {
+    font-size: 4rem;
+    animation: bounce 0.6s ease-in-out infinite alternate;
+    display: block;
+    margin-bottom: 16px;
+  }
+
+  @keyframes bounce {
+    from { transform: translateY(0) scale(1); }
+    to { transform: translateY(-10px) scale(1.1); }
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(-8deg); }
+    75% { transform: rotate(8deg); }
+  }
+
+  @keyframes glow {
+    from { filter: drop-shadow(0 0 5px rgba(245,214,122,0.5)); }
+    to { filter: drop-shadow(0 0 20px rgba(245,214,122,1)); }
+  }
+
+  .hatch-emoji.shaking { animation: shake 0.3s ease-in-out infinite; }
+  .hatch-emoji.glowing { animation: glow 0.5s ease-in-out infinite alternate; }
+
+  .hatch-message {
+    font-family: 'Hachi Maru Pop', serif;
+    font-size: 1.1rem;
+    color: #f5d67a;
+    margin-bottom: 8px;
+  }
+
+  .hatch-sub {
+    font-size: 0.8rem;
+    color: #ccc;
+  }
+
+  .particles {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 12px;
+    font-size: 1.2rem;
+    animation: fadeInOut 1s ease-in-out infinite alternate;
+  }
+
+  @keyframes fadeInOut {
+    from { opacity: 0.3; }
+    to { opacity: 1; }
+  }
+
   .spinner {
     width: 44px;
     height: 44px;
@@ -245,17 +309,6 @@
     border: 1px solid;
   }
 
-  .capture-info { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px; }
-
-  .capture-badge {
-    background: rgba(255,255,255,0.08);
-    border: 1px solid rgba(255,255,255,0.2);
-    border-radius: 6px;
-    padding: 3px 8px;
-    font-size: 0.72rem;
-    color: #f0ebe0;
-  }
-
   .section { margin-bottom: 18px; }
 
   .section-label {
@@ -286,8 +339,52 @@
   .weather-tag.strong { border-color: #27ae60; color: #27ae60; }
   .weather-tag.weak { border-color: #c0392b; color: #c0392b; }
 
+  /* 牧場 */
   .farm-panel { width: 100%; display: none; }
   .farm-panel.visible { display: block; }
+
+  .trainer-card {
+    background: rgba(10,10,20,0.85);
+    border: 1px solid rgba(245,214,122,0.3);
+    border-radius: 16px;
+    padding: 16px 20px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .trainer-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #8e44ad, #f5d67a);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    flex-shrink: 0;
+  }
+
+  .trainer-info { flex: 1; }
+  .trainer-name { font-family: 'Hachi Maru Pop', serif; font-size: 1rem; color: #f5d67a; margin-bottom: 4px; }
+  .trainer-level { font-size: 0.75rem; color: #aaa; margin-bottom: 6px; }
+
+  .exp-bar-wrap {
+    background: rgba(255,255,255,0.1);
+    border-radius: 999px;
+    height: 6px;
+    overflow: hidden;
+  }
+
+  .exp-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #8e44ad, #f5d67a);
+    border-radius: 999px;
+    transition: width 0.5s ease;
+  }
+
+  .exp-text { font-size: 0.65rem; color: #888; margin-top: 4px; }
 
   .farm-grid { display: flex; flex-direction: column; gap: 12px; }
 
@@ -319,11 +416,7 @@
     font-size: 2.5rem;
   }
 
-  .farm-icon img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
+  .farm-icon img { width: 100%; height: 100%; object-fit: cover; }
 
   .farm-info { flex: 1; min-width: 0; }
   .farm-name { font-family: 'Hachi Maru Pop', serif; font-size: 1rem; color: #f5d67a; }
@@ -367,9 +460,138 @@
   .egg-result .egg-icon { font-size: 4rem; margin-bottom: 12px; }
   .egg-result h3 { font-family: 'Hachi Maru Pop', serif; color: #f5d67a; margin-bottom: 8px; }
   .egg-result p { font-size: 0.85rem; color: #ccc; line-height: 1.7; }
+
+  /* 名前入力モーダル */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .modal-overlay.hidden { display: none; }
+
+  .modal-box {
+    background: #0d1117;
+    border: 1px solid rgba(245,214,122,0.4);
+    border-radius: 20px;
+    padding: 32px 24px;
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+  }
+
+  .modal-box h2 {
+    font-family: 'Hachi Maru Pop', serif;
+    font-size: 1.4rem;
+    color: #f5d67a;
+    margin-bottom: 8px;
+  }
+
+  .modal-box p {
+    font-size: 0.85rem;
+    color: #aaa;
+    margin-bottom: 24px;
+    line-height: 1.7;
+  }
+
+  .modal-input {
+    width: 100%;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 10px;
+    padding: 14px 16px;
+    color: #f0ebe0;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 1rem;
+    outline: none;
+    margin-bottom: 16px;
+    text-align: center;
+  }
+
+  .modal-input:focus { border-color: #f5d67a; }
+
+  .modal-btn {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #8e44ad, #6c3483);
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-family: 'Hachi Maru Pop', serif;
+    font-size: 1rem;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+  }
+
+  .modal-btn:hover { opacity: 0.85; }
+
+  /* レベルアップ演出 */
+  .levelup-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    display: none;
+  }
+
+  .levelup-overlay.visible { display: flex; }
+
+  .levelup-box {
+    text-align: center;
+    animation: levelupPop 0.5s ease-out;
+  }
+
+  @keyframes levelupPop {
+    from { transform: scale(0.5); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+
+  .levelup-text {
+    font-family: 'Hachi Maru Pop', serif;
+    font-size: 2.5rem;
+    color: #f5d67a;
+    text-shadow: 0 0 30px rgba(245,214,122,0.8), 2px 2px 0 #000;
+    margin-bottom: 8px;
+  }
+
+  .levelup-sub {
+    font-size: 1rem;
+    color: #fff;
+    text-shadow: 1px 1px 4px #000;
+  }
 </style>
 </head>
 <body>
+
+<!-- 名前入力モーダル -->
+<div class="modal-overlay" id="nameModal">
+  <div class="modal-box">
+    <div style="font-size:3rem;margin-bottom:16px">🎮</div>
+    <h2>トレーナー名を入力</h2>
+    <p>あなたのトレーナー名を決めてください。<br>全国のモンスターを集める旅が始まります！</p>
+    <input class="modal-input" id="nameInput" type="text" placeholder="トレーナー名" maxlength="12" />
+    <button class="modal-btn" onclick="saveTrainerName()">🌟 冒険を始める</button>
+  </div>
+</div>
+
+<!-- レベルアップ演出 -->
+<div class="levelup-overlay" id="levelupOverlay" onclick="this.classList.remove('visible')">
+  <div class="levelup-box">
+    <div style="font-size:4rem;margin-bottom:16px">⭐✨🌟</div>
+    <div class="levelup-text" id="levelupText">LEVEL UP!</div>
+    <div class="levelup-sub" id="levelupSub"></div>
+    <div style="font-size:0.8rem;color:#aaa;margin-top:16px">タップして閉じる</div>
+  </div>
+</div>
+
 <div class="hero">
   <div class="hero-bg"></div>
   <div class="hero-content">
@@ -397,6 +619,13 @@
       <div class="loading-state" id="loadingState">
         <div class="spinner"></div>
         <div class="loading-text" id="loadingText">現在地を取得中...</div>
+      </div>
+
+      <div class="hatch-loading" id="hatchLoading">
+        <span class="hatch-emoji" id="hatchEmoji">🥚</span>
+        <div class="hatch-message" id="hatchMessage">卵が動いています...</div>
+        <div class="hatch-sub" id="hatchSub">しばらくお待ちください</div>
+        <div class="particles" id="hatchParticles">✨ 💫 ✨</div>
       </div>
 
       <div class="error-state" id="errorState"></div>
@@ -440,12 +669,12 @@
     </div>
 
     <div class="farm-panel" id="farmTab">
+      <div class="trainer-card" id="trainerCard"></div>
       <div class="farm-grid" id="farmGrid"></div>
     </div>
 
   </div>
-</div>
-<script>
+</div><script>
 const TYPE_COLORS = {
   '炎': '#ff6644', '水': '#4499ff', '雷': '#ffdd00', '氷': '#88eeff',
   '風': '#44ffaa', '土': '#cc9944', '闇': '#cc66ff', '光': '#ffffcc', '鋼': '#aaaacc',
@@ -529,6 +758,30 @@ const SPECIAL_WARDS = {
   }
 };
 
+// トレーナーレベル設計
+const LEVEL_TABLE = [
+  0, 1, 2, 4, 6, 9, 12, 16, 20, 25, 30,
+  36, 42, 49, 56, 64, 72, 81, 90, 100
+];
+
+function getTrainerLevel(adultCount) {
+  let level = 1;
+  for (let i = 0; i < LEVEL_TABLE.length; i++) {
+    if (adultCount >= LEVEL_TABLE[i]) level = i + 1;
+    else break;
+  }
+  return level;
+}
+
+function getExpProgress(adultCount) {
+  const level = getTrainerLevel(adultCount);
+  const currentThreshold = LEVEL_TABLE[level - 1] || 0;
+  const nextThreshold = LEVEL_TABLE[level] || LEVEL_TABLE[level - 1] + 30;
+  const progress = adultCount - currentThreshold;
+  const needed = nextThreshold - currentThreshold;
+  return { level, progress, needed, percent: Math.min(100, (progress / needed) * 100) };
+}
+
 function detectWard(lat, lon) {
   for (const [city, data] of Object.entries(SPECIAL_WARDS)) {
     const b = data.bounds;
@@ -553,6 +806,18 @@ function getUserId() {
   return uid;
 }
 
+function getTrainerName() {
+  return localStorage.getItem('trainerName') || null;
+}
+
+function saveTrainerName() {
+  const input = document.getElementById('nameInput').value.trim();
+  if (!input) return;
+  localStorage.setItem('trainerName', input);
+  document.getElementById('nameModal').classList.add('hidden');
+  renderTrainerCard();
+}
+
 function getFarmData() {
   const data = localStorage.getItem('farmData');
   return data ? JSON.parse(data) : {};
@@ -567,6 +832,26 @@ function updateFarmCount() {
   const farm = getFarmData();
   const count = Object.keys(farm).length;
   document.getElementById('farmCount').textContent = count > 0 ? '(' + count + ')' : '';
+}
+
+function countAdults() {
+  const farm = getFarmData();
+  return Object.values(farm).filter(e => e.stage === 'adult').length;
+}
+
+function renderTrainerCard() {
+  const name = getTrainerName() || 'トレーナー';
+  const adultCount = countAdults();
+  const { level, progress, needed, percent } = getExpProgress(adultCount);
+  const card = document.getElementById('trainerCard');
+  card.innerHTML =
+    '<div class="trainer-avatar">🎮</div>' +
+    '<div class="trainer-info">' +
+      '<div class="trainer-name">' + name + '</div>' +
+      '<div class="trainer-level">トレーナー Lv.' + level + '</div>' +
+      '<div class="exp-bar-wrap"><div class="exp-bar" style="width:' + percent + '%"></div></div>' +
+      '<div class="exp-text">大人モンスター ' + progress + ' / ' + needed + ' 匹</div>' +
+    '</div>';
 }
 
 function formatTimer(ms) {
@@ -585,6 +870,58 @@ let detectedWeather = '';
 let detectedTemp = '';
 let farmTimerInterval = null;
 let hatchingCities = {};
+
+function showHatchLoading(isEgg) {
+  const el = document.getElementById('hatchLoading');
+  const emoji = document.getElementById('hatchEmoji');
+  const msg = document.getElementById('hatchMessage');
+  const sub = document.getElementById('hatchSub');
+  const particles = document.getElementById('hatchParticles');
+
+  el.classList.add('visible');
+
+  if (isEgg) {
+    emoji.textContent = '🥚';
+    emoji.className = 'hatch-emoji shaking';
+    msg.textContent = '🥚 卵が割れています...';
+    sub.textContent = 'もうすぐ生まれてきます！';
+    particles.textContent = '✨ 💫 ✨';
+
+    setTimeout(() => {
+      emoji.textContent = '🐣';
+      emoji.className = 'hatch-emoji bounce';
+      msg.textContent = '🐣 生まれてきています...！';
+      sub.textContent = 'もう少しだけ待ってください';
+      particles.textContent = '🌟 ⭐ 🌟';
+    }, 8000);
+  } else {
+    emoji.textContent = '✨';
+    emoji.className = 'hatch-emoji glowing';
+    msg.textContent = '🌟 進化しています...！';
+    sub.textContent = '姿が変わっていきます...';
+    particles.textContent = '⚡ 🌈 ⚡';
+
+    setTimeout(() => {
+      emoji.textContent = '🌟';
+      msg.textContent = '⭐ もうすぐ完成です...！';
+      particles.textContent = '✨ 💫 🌟 💫 ✨';
+    }, 8000);
+  }
+}
+
+function hideHatchLoading() {
+  document.getElementById('hatchLoading').classList.remove('visible');
+  const emoji = document.getElementById('hatchEmoji');
+  emoji.className = 'hatch-emoji';
+}
+
+function showLevelUp(newLevel) {
+  const overlay = document.getElementById('levelupOverlay');
+  document.getElementById('levelupText').textContent = 'LEVEL ' + newLevel + ' ！';
+  document.getElementById('levelupSub').textContent = 'トレーナーレベルが上がった！';
+  overlay.classList.add('visible');
+  setTimeout(() => overlay.classList.remove('visible'), 3000);
+}
 
 async function detectLocation() {
   document.getElementById('detectedCity').textContent = '取得中...';
@@ -675,10 +1012,13 @@ async function hatchNow(city) {
   const entry = farm[city];
   if (!entry) { hatchingCities[city] = false; return; }
 
-  document.getElementById('farmTab').innerHTML = '<div style="text-align:center;padding:40px;color:#f5d67a"><div class="spinner" style="margin:0 auto 16px"></div>生成中...</div>';
+  const isEgg = entry.stage === 'egg';
+  const prevAdultCount = countAdults();
+
+  showHatchLoading(isEgg);
 
   try {
-    if (entry.stage === 'egg') {
+    if (isEgg) {
       const res = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -702,14 +1042,25 @@ async function hatchNow(city) {
         const f = getFarmData();
         f[city] = { ...f[city], stage: 'adult', monster };
         saveFarmData(f);
+
+        const newAdultCount = countAdults();
+        const prevLevel = getTrainerLevel(prevAdultCount);
+        const newLevel = getTrainerLevel(newAdultCount);
+        if (newLevel > prevLevel) {
+          showLevelUp(newLevel);
+        }
       }
     }
   } finally {
     hatchingCities[city] = false;
   }
 
-  document.getElementById('farmTab').innerHTML = '<div class="farm-grid" id="farmGrid"></div>';
+  hideHatchLoading();
   renderFarm();
+  if (currentTab === 'generate') {
+    const f = getFarmData();
+    if (f[city] && f[city].monster) renderMonster(f[city].monster);
+  }
 }
 
 function switchTab(tab) {
@@ -723,6 +1074,7 @@ function switchTab(tab) {
 }
 
 function renderFarm() {
+  renderTrainerCard();
   const farm = getFarmData();
   const grid = document.getElementById('farmGrid');
   if (!grid) return;
@@ -862,6 +1214,18 @@ function renderMonster(m) {
 
   document.getElementById('resultCard').classList.add('visible');
 }
+
+// 初期化
+const trainerName = getTrainerName();
+if (!trainerName) {
+  document.getElementById('nameModal').classList.remove('hidden');
+} else {
+  document.getElementById('nameModal').classList.add('hidden');
+}
+
+document.getElementById('nameInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') saveTrainerName();
+});
 
 updateFarmCount();
 detectLocation();
