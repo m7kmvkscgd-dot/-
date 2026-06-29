@@ -1210,6 +1210,9 @@ async function pickupEgg() {
     });
     const data = await res.json();
     document.getElementById('loadingState').classList.remove('visible');
+    if (data.status === 'already_have_monster') {
+  showEggResult('⭐ すでにモンスターがいます', detectedCity + 'のモンスターはすでに誕生しています。牧場で確認してください。');
+} else
     if (data.status === 'egg_picked') {
       const farm = getFarmData();
       farm[detectedCity] = { stage: 'egg', egg: data.egg, weatherInfo: detectedWeather, temp: detectedTemp };
