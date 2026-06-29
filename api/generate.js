@@ -33,7 +33,6 @@ module.exports = async function handler(req, res) {
       return res.status(500).json({ error: 'No JSON found in response' });
     }
     const monster = JSON.parse(match[0]);
-    // gpt-image-1で画像生成
     try {
       const imagePrompt = (monster.promptEn || []).join(', ');
       const imageRes = await fetch('https://api.openai.com/v1/images/generations', {
@@ -63,4 +62,13 @@ module.exports = async function handler(req, res) {
         });
         monster.imageUrl = url;
       } else {
-        monster.imageError = 'No image data returned: ' +
+        monster.imageError = 'No image data: ' + JSON.stringify(imageData).slice(0, 200);
+      }
+    } catch (imgError) {
+      monster.imageError = imgError.message;
+    }
+    return res.status(200).json(monster);
+  } catch (e) {
+    return res.status(500).json({ error: e.message });
+  }
+};
