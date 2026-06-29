@@ -114,25 +114,6 @@
   .location-city { font-size: 1.4rem; font-weight: 700; color: #f5d67a; margin: 4px 0; }
   .location-sub { font-size: 0.75rem; color: #aaa; }
 
-  .gen-btn {
-    padding: 14px 24px;
-    background: linear-gradient(135deg, #c0392b, #922b21);
-    border: none;
-    border-radius: 10px;
-    color: white;
-    font-family: 'Hachi Maru Pop', serif;
-    font-size: 1.1rem;
-    letter-spacing: 0.15em;
-    cursor: pointer;
-    transition: opacity 0.15s, transform 0.1s;
-    box-shadow: 0 4px 15px rgba(192,57,43,0.4);
-    width: 100%;
-  }
-
-  .gen-btn:hover { opacity: 0.85; }
-  .gen-btn:active { transform: scale(0.97); }
-  .gen-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
   .egg-btn {
     padding: 14px 24px;
     background: linear-gradient(135deg, #8e44ad, #6c3483);
@@ -305,7 +286,6 @@
   .weather-tag.strong { border-color: #27ae60; color: #27ae60; }
   .weather-tag.weak { border-color: #c0392b; color: #c0392b; }
 
-  /* 牧場 */
   .farm-panel { width: 100%; display: none; }
   .farm-panel.visible { display: block; }
 
@@ -319,6 +299,7 @@
     display: flex;
     align-items: center;
     gap: 14px;
+    cursor: pointer;
   }
 
   .farm-card.egg { border-color: rgba(142,68,173,0.4); }
@@ -349,6 +330,21 @@
   .farm-city { font-size: 0.72rem; color: #888; margin-bottom: 4px; }
   .farm-status { font-size: 0.75rem; color: #aaa; }
   .farm-timer { font-size: 0.8rem; color: #f5d67a; font-weight: 700; margin-top: 4px; }
+
+  .hatch-btn {
+    margin-top: 6px;
+    padding: 8px 14px;
+    background: linear-gradient(135deg, #8e44ad, #6c3483);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-size: 0.8rem;
+    cursor: pointer;
+    font-family: 'Noto Sans JP', sans-serif;
+    width: 100%;
+  }
+
+  .hatch-btn:hover { opacity: 0.85; }
 
   .farm-empty {
     text-align: center;
@@ -388,7 +384,9 @@
     <div class="tab-bar">
       <button class="tab-btn active" onclick="switchTab('generate')">生成</button>
       <button class="tab-btn" onclick="switchTab('farm')">牧場 <span id="farmCount"></span></button>
-    </div><div id="generateTab" style="width:100%;display:flex;flex-direction:column;gap:20px;">
+    </div>
+
+    <div id="generateTab" style="width:100%;display:flex;flex-direction:column;gap:20px;">
       <div class="location-box">
         <div class="location-text">現在地</div>
         <div class="location-city" id="detectedCity">取得中...</div>
@@ -420,7 +418,6 @@
             <div id="monStageBadge"></div>
             <h2 id="monName"></h2>
             <div id="monTypes"></div>
-            <div class="capture-info" id="captureInfo"></div>
           </div>
         </div>
         <div class="section">
@@ -448,7 +445,6 @@
 
   </div>
 </div>
-
 <script>
 const TYPE_COLORS = {
   '炎': '#ff6644', '水': '#4499ff', '雷': '#ffdd00', '氷': '#88eeff',
@@ -473,7 +469,6 @@ const WEATHER_CODES = {
   95: 'thunder', 96: 'thunder', 99: 'thunder',
 };
 
-// 東京23区・大阪24区の座標判定
 const SPECIAL_WARDS = {
   tokyo: {
     bounds: { minLat: 35.53, maxLat: 35.82, minLon: 139.55, maxLon: 139.92 },
@@ -575,7 +570,7 @@ function updateFarmCount() {
 }
 
 function formatTimer(ms) {
-  if (ms <= 0) return '孵化準備完了！';
+  if (ms <= 0) return '準備完了！';
   const h = Math.floor(ms / 3600000);
   const m = Math.floor((ms % 3600000) / 60000);
   const s = Math.floor((ms % 60000) / 1000);
@@ -589,6 +584,7 @@ let detectedCity = '';
 let detectedWeather = '';
 let detectedTemp = '';
 let farmTimerInterval = null;
+let hatchingCities = {};
 
 async function detectLocation() {
   document.getElementById('detectedCity').textContent = '取得中...';
@@ -599,11 +595,7 @@ async function detectLocation() {
       navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 8000 })
     );
     const { latitude: lat, longitude: lon } = pos.coords;
-
-    // 東京23区・大阪24区チェック
     const ward = detectWard(lat, lon);
-
-    // 逆ジオコーディング
     let cityName = ward;
     if (!cityName) {
       const geoRes = await fetch('https://nominatim.openstreetmap.org/reverse?lat=' + lat + '&lon=' + lon + '&format=json&accept-language=ja');
@@ -611,12 +603,8 @@ async function detectLocation() {
       const addr = geoData.address || {};
       cityName = addr.city || addr.town || addr.village || addr.county || '不明';
     }
-
     detectedCity = cityName;
     document.getElementById('detectedCity').textContent = cityName;
-    document.getElementById('detectedSub').textContent = '緯度 ' + lat.toFixed(3) + ' 経度 ' + lon.toFixed(3);
-
-    // 天気取得
     try {
       const weatherRes = await fetch('https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lon + '&current=temperature_2m,pressure_msl,weathercode&timezone=auto');
       const weatherData = await weatherRes.json();
@@ -627,9 +615,7 @@ async function detectLocation() {
       const wLabel = WEATHER_LABELS[weatherType] || weatherType;
       document.getElementById('detectedSub').textContent = wLabel + ' ' + c.temperature_2m + '°C';
     } catch(e) {}
-
     document.getElementById('eggBtn').disabled = false;
-
   } catch(e) {
     document.getElementById('detectedCity').textContent = '位置情報を取得できませんでした';
     document.getElementById('detectedSub').textContent = '位置情報の許可が必要です';
@@ -639,7 +625,6 @@ async function detectLocation() {
 async function pickupEgg() {
   if (!detectedCity) return;
   const userId = getUserId();
-
   document.getElementById('eggBtn').disabled = true;
   document.getElementById('loadingState').classList.add('visible');
   document.getElementById('loadingText').textContent = '卵を探しています...';
@@ -654,14 +639,13 @@ async function pickupEgg() {
       body: JSON.stringify({ action: 'pickup', city: detectedCity, userId }),
     });
     const data = await res.json();
-
     document.getElementById('loadingState').classList.remove('visible');
 
     if (data.status === 'egg_picked') {
       const farm = getFarmData();
       farm[detectedCity] = { stage: 'egg', egg: data.egg, weatherInfo: detectedWeather, temp: detectedTemp };
       saveFarmData(farm);
-      showEggResult('🥚 卵を拾いました！', detectedCity + 'の卵を手に入れました。\n5時間後に孵化します。牧場で確認してください！');
+      showEggResult('🥚 卵を拾いました！', detectedCity + 'の卵を手に入れました。\n孵化したら牧場で「孵化させる」ボタンを押してください！');
     } else if (data.status === 'already_have_egg') {
       showEggResult('🥚 すでに卵があります', detectedCity + 'の卵はすでに持っています。牧場で確認してください。');
     } else if (data.status === 'already_generated') {
@@ -683,40 +667,49 @@ function showEggResult(title, text) {
   document.getElementById('eggResult').classList.add('visible');
 }
 
-async function checkAndHatch(city) {
-  const userId = getUserId();
+async function hatchNow(city) {
+  if (hatchingCities[city]) return;
+  hatchingCities[city] = true;
+
   const farm = getFarmData();
   const entry = farm[city];
-  if (!entry) return;
+  if (!entry) { hatchingCities[city] = false; return; }
 
-  const now = Date.now();
-  const egg = entry.egg;
+  document.getElementById('farmTab').innerHTML = '<div style="text-align:center;padding:40px;color:#f5d67a"><div class="spinner" style="margin:0 auto 16px"></div>生成中...</div>';
 
-  if (now >= egg.growAt) {
-    // 大人になる時間
-    if (entry.stage !== 'adult' || !entry.monster || entry.monster.stage !== 'adult') {
-      const res = await fetch('/api/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ city, weatherInfo: entry.weatherInfo, stage: 'adult' }),
-      });
-      const monster = await res.json();
-      farm[city] = { ...entry, stage: 'adult', monster };
-      saveFarmData(farm);
-    }
-  } else if (now >= egg.hatchAt) {
-    // 子供になる時間
-    if (entry.stage !== 'child' && entry.stage !== 'adult') {
+  try {
+    if (entry.stage === 'egg') {
       const res = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ city, weatherInfo: entry.weatherInfo, stage: 'child' }),
       });
       const monster = await res.json();
-      farm[city] = { ...entry, stage: 'child', monster };
-      saveFarmData(farm);
+      if (!monster.error) {
+        const f = getFarmData();
+        f[city] = { ...f[city], stage: 'child', monster };
+        saveFarmData(f);
+      }
+    } else if (entry.stage === 'child') {
+      const childMonster = entry.monster;
+      const res = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ city, weatherInfo: entry.weatherInfo, stage: 'adult', childMonster }),
+      });
+      const monster = await res.json();
+      if (!monster.error) {
+        const f = getFarmData();
+        f[city] = { ...f[city], stage: 'adult', monster };
+        saveFarmData(f);
+      }
     }
+  } finally {
+    hatchingCities[city] = false;
   }
+
+  document.getElementById('farmTab').innerHTML = '<div class="farm-grid" id="farmGrid"></div>';
+  renderFarm();
 }
 
 function switchTab(tab) {
@@ -729,55 +722,58 @@ function switchTab(tab) {
   if (tab === 'farm') renderFarm();
 }
 
-async function renderFarm(skipHatchCheck = false) {
+function renderFarm() {
   const farm = getFarmData();
   const grid = document.getElementById('farmGrid');
+  if (!grid) return;
 
   if (Object.keys(farm).length === 0) {
     grid.innerHTML = '<div class="farm-empty">まだモンスターがいません<br>現地に行って卵を拾おう！</div>';
     return;
   }
 
-  // 孵化チェック（タイマーからの呼び出し時はスキップ）
-  if (!skipHatchCheck) {
-    for (const city of Object.keys(farm)) {
-      await checkAndHatch(city);
-    }
-  }
-
-  const updatedFarm = getFarmData();
   const now = Date.now();
 
-  grid.innerHTML = Object.entries(updatedFarm).map(([city, entry]) => {
+  grid.innerHTML = Object.entries(farm).map(([city, entry]) => {
     const egg = entry.egg;
     let iconHtml = '';
     let statusText = '';
-    let timerText = '';
+    let timerHtml = '';
     let cardClass = 'farm-card';
 
     if (entry.stage === 'egg') {
-      iconHtml = '<div class="farm-icon">🥚</div>';
       const remaining = egg.hatchAt - now;
+      const ready = remaining <= 0;
+      iconHtml = '<div class="farm-icon">🥚</div>';
       statusText = '卵';
-      timerText = remaining > 0 ? '孵化まで ' + formatTimer(remaining) : '孵化準備完了！';
       cardClass += ' egg';
+      if (ready) {
+        timerHtml = '<button class="hatch-btn" onclick="event.stopPropagation();hatchNow(\'' + city + '\')">🥚 孵化させる</button>';
+      } else {
+        timerHtml = '<div class="farm-timer">孵化まで ' + formatTimer(remaining) + '</div>';
+      }
     } else if (entry.stage === 'child') {
       const m = entry.monster;
       const imgSrc = m && m.imageUrl;
       iconHtml = imgSrc
-        ? '<div class="farm-icon"><img src="' + imgSrc + '" alt="' + (m.name || '') + '" /></div>'
+        ? '<div class="farm-icon"><img src="' + imgSrc + '" alt="' + (m ? m.name || '' : '') + '" /></div>'
         : '<div class="farm-icon">' + (m ? m.emoji || '👶' : '👶') + '</div>';
       const remaining = egg.growAt - now;
-      statusText = '子供';
-      timerText = remaining > 0 ? '大人まで ' + formatTimer(remaining) : '進化準備完了！';
+      const ready = remaining <= 0;
+      statusText = '👶 子供';
       cardClass += ' child';
+      if (ready) {
+        timerHtml = '<button class="hatch-btn" onclick="event.stopPropagation();hatchNow(\'' + city + '\')">⭐ 進化させる</button>';
+      } else {
+        timerHtml = '<div class="farm-timer">大人まで ' + formatTimer(remaining) + '</div>';
+      }
     } else {
       const m = entry.monster;
       const imgSrc = m && m.imageUrl;
       iconHtml = imgSrc
-        ? '<div class="farm-icon"><img src="' + imgSrc + '" alt="' + (m.name || '') + '" /></div>'
+        ? '<div class="farm-icon"><img src="' + imgSrc + '" alt="' + (m ? m.name || '' : '') + '" /></div>'
         : '<div class="farm-icon">' + (m ? m.emoji || '👾' : '👾') + '</div>';
-      statusText = '大人';
+      statusText = '⭐ 大人';
       cardClass += ' adult';
     }
 
@@ -790,15 +786,14 @@ async function renderFarm(skipHatchCheck = false) {
         '<div class="farm-city">' + city + '</div>' +
         '<div class="farm-name">' + name + '</div>' +
         '<div class="farm-status">' + statusText + '</div>' +
-        (timerText ? '<div class="farm-timer">' + timerText + '</div>' : '') +
+        timerHtml +
       '</div>' +
     '</div>';
   }).join('');
 
-  // タイマー更新
   if (farmTimerInterval) clearInterval(farmTimerInterval);
   farmTimerInterval = setInterval(() => {
-if (currentTab === 'farm') renderFarm(true);
+    if (currentTab === 'farm') renderFarm();
   }, 1000);
 }
 
