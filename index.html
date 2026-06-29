@@ -4,11 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="manifest" href="/manifest.json">
-<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="ご当地モンスター">
 <link rel="apple-touch-icon" href="/icon.jpg">
-  <title>ご当地モンスター</title>
+<title>ご当地モンスター</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Hachi+Maru+Pop&family=Noto+Sans+JP:wght@400;700;900&display=swap');
 
@@ -336,6 +336,25 @@
   .weather-tag.strong { border-color: #27ae60; color: #27ae60; }
   .weather-tag.weak { border-color: #c0392b; color: #c0392b; }
 
+  .moves-list { display: flex; flex-direction: column; gap: 8px; }
+  .move-item {
+    background: rgba(255,255,255,0.05);
+    border-radius: 8px;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .move-name { font-size: 0.88rem; color: #f0ebe0; flex: 1; }
+  .move-type {
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 999px;
+    border: 1px solid;
+  }
+  .move-power { font-size: 0.75rem; color: #f5d67a; font-weight: 700; }
+
   /* 牧場・地図 */
   .farm-panel { width: 100%; display: none; }
   .farm-panel.visible { display: block; }
@@ -578,17 +597,16 @@
   }
 
   .modal-btn:hover { opacity: 0.85; }
-  /* アバター選択 */
+
   .avatar-modal {
     position: fixed;
     inset: 0;
     background: rgba(0,0,0,0.85);
     z-index: 100;
-    display: flex;
+    display: none;
     align-items: center;
     justify-content: center;
     padding: 20px;
-    display: none;
   }
 
   .avatar-modal.visible { display: flex; }
@@ -639,7 +657,6 @@
     font-size: 0.85rem;
   }
 
-  /* レベルアップ */
   .levelup-overlay {
     position: fixed;
     inset: 0;
@@ -681,6 +698,7 @@
     <button class="modal-btn" onclick="saveTrainerName()">🌟 冒険を始める</button>
   </div>
 </div>
+
 <div class="avatar-modal" id="avatarModal">
   <div class="avatar-box">
     <h3>アイコンを選ぶ</h3>
@@ -688,6 +706,7 @@
     <button class="avatar-close" onclick="closeAvatarModal()">閉じる</button>
   </div>
 </div>
+
 <div class="levelup-overlay" id="levelupOverlay" onclick="this.classList.remove('visible')">
   <div class="levelup-box">
     <div style="font-size:4rem;margin-bottom:16px">⭐✨🌟</div>
@@ -766,6 +785,10 @@
           <div class="section-label">天気相性</div>
           <div class="weather-affinity" id="monWeather"></div>
         </div>
+        <div class="section" id="monMovesSection" style="display:none">
+          <div class="section-label">技</div>
+          <div class="moves-list" id="monMoves"></div>
+        </div>
         <div class="section" style="margin-bottom:0">
           <div class="section-label">由来・伝承</div>
           <div class="lore-text" id="monLore"></div>
@@ -788,8 +811,8 @@
   </div>
 </div><script>
 const TYPE_COLORS = {
-  '炎': '#ff6644', '水': '#4499ff', '雷': '#ffdd00', '氷': '#88eeff',
-  '風': '#44ffaa', '土': '#cc9944', '闇': '#cc66ff', '光': '#ffffcc', '鋼': '#aaaacc',
+  '火': '#ff6644', '水': '#4499ff', '雷': '#ffdd00', '氷': '#88eeff',
+  '雲': '#aaccff', '土': '#cc9944', '木': '#44cc66', '鉄': '#aaaacc', '念': '#cc99ff',
   'fire': '#ff6644', 'water': '#4499ff', 'thunder': '#ffdd00', 'ice': '#88eeff',
   'wind': '#44ffaa', 'earth': '#cc9944', 'dark': '#cc66ff', 'light': '#ffffcc',
   'spirit': '#cc99ff', 'ghost': '#9988cc',
@@ -893,7 +916,6 @@ const SPECIAL_WARDS = {
   }
 };
 
-// 都道府県データ
 const PREFECTURES = [
   { name: '北海道', region: '北海道' },
   { name: '青森県', region: '東北' }, { name: '岩手県', region: '東北' }, { name: '宮城県', region: '東北' },
@@ -916,7 +938,6 @@ const PREFECTURES = [
   { name: '鹿児島県', region: '九州' }, { name: '沖縄県', region: '九州' },
 ];
 
-// 市区町村→都道府県マッピング
 const CITY_TO_PREF = {
   '千代田区': '東京都', '中央区': '東京都', '港区': '東京都', '新宿区': '東京都',
   '文京区': '東京都', '台東区': '東京都', '墨田区': '東京都', '江東区': '東京都',
@@ -985,6 +1006,7 @@ function getUserId() {
 }
 
 function getTrainerName() { return localStorage.getItem('trainerName') || null; }
+
 const PERSONALITIES = [
   'やんちゃ','いさましい','がむしゃら','まっすぐ','ほんきだし','おてんば','はりきり','じょうぶ','つよがり','あばれんぼ',
   'おっとり','マイペース','なまけもの','ぼんやり','のんき','ゆうゆう','あわてんぼ','ぐうたら','うとうと','ほのぼの',
@@ -996,7 +1018,8 @@ const PERSONALITIES = [
 function getRandomPersonality() {
   return PERSONALITIES[Math.floor(Math.random() * PERSONALITIES.length)];
 }
-  const AVATARS = ['🧙', '🗺️', '🥷', '🦊', '🐉', '👑', '🌟', '🧝', '🍀', '🦅', '🏔️', '🌊', '🔮', '🎭', '🦁'];
+
+const AVATARS = ['🧙', '🗺️', '🥷', '🦊', '🐉', '👑', '🌟', '🧝', '🍀', '🦅', '🏔️', '🌊', '🔮', '🎭', '🦁'];
 
 function getAvatar() { return localStorage.getItem('trainerAvatar') || '🎮'; }
 
@@ -1018,6 +1041,7 @@ function openAvatarModal() {
 function closeAvatarModal() {
   document.getElementById('avatarModal').classList.remove('visible');
 }
+
 function saveTrainerName() {
   const input = document.getElementById('nameInput').value.trim();
   if (!input) return;
@@ -1055,7 +1079,6 @@ function getClearedPrefectures() {
       const pref = CITY_TO_PREF[city];
       if (pref) prefSet.add(pref);
       else {
-        // 市名から都道府県を推定
         PREFECTURES.forEach(p => {
           if (city.includes(p.name.replace('県', '').replace('府', '').replace('都', '').replace('道', ''))) {
             prefSet.add(p.name);
@@ -1083,7 +1106,7 @@ function renderTrainerCard() {
   const name = getTrainerName() || 'トレーナー';
   const adultCount = countAdults();
   const { level, progress, needed, percent } = getExpProgress(adultCount);
-const clearedPrefs = getClearedPrefectures().size;
+  const clearedPrefs = getClearedPrefectures().size;
   const card = document.getElementById('trainerCard');
   card.innerHTML =
     '<div class="trainer-avatar" onclick="openAvatarModal()" style="cursor:pointer">' + getAvatar() + '</div>' +
@@ -1099,23 +1122,19 @@ function renderMap() {
   const cleared = getClearedPrefectures();
   const partial = getPartialPrefectures();
   const farm = getFarmData();
-
   const totalMonsters = Object.values(farm).filter(e => e.stage === 'adult').length;
   const totalPrefs = cleared.size;
   const totalVisited = Object.keys(farm).length;
-
   const regions = {};
   PREFECTURES.forEach(p => {
     if (!regions[p.region]) regions[p.region] = [];
     regions[p.region].push(p);
   });
-
   let html = '<div class="map-stats">' +
     '<div class="map-stat-item"><div class="map-stat-value">' + totalMonsters + '</div><div class="map-stat-label">大人モンスター</div></div>' +
     '<div class="map-stat-item"><div class="map-stat-value">' + totalPrefs + '</div><div class="map-stat-label">制覇都道府県</div></div>' +
     '<div class="map-stat-item"><div class="map-stat-value">' + totalVisited + '</div><div class="map-stat-label">訪問地域</div></div>' +
   '</div>';
-
   Object.entries(regions).forEach(([region, prefs]) => {
     const clearedCount = prefs.filter(p => cleared.has(p.name)).length;
     html += '<div style="margin-bottom:12px">' +
@@ -1131,7 +1150,6 @@ function renderMap() {
     });
     html += '</div></div>';
   });
-
   document.getElementById('mapPanel').innerHTML = html;
 }
 
@@ -1237,6 +1255,11 @@ async function detectLocation() {
 
 async function pickupEgg() {
   if (!detectedCity) return;
+  const farmCheck = getFarmData();
+  if (farmCheck[detectedCity] && farmCheck[detectedCity].stage === 'adult') {
+    showEggResult('⭐ すでにモンスターがいます', detectedCity + 'のモンスターはすでに誕生しています。牧場で確認してください。');
+    return;
+  }
   const userId = getUserId();
   document.getElementById('eggBtn').disabled = true;
   document.getElementById('loadingState').classList.add('visible');
@@ -1252,9 +1275,6 @@ async function pickupEgg() {
     });
     const data = await res.json();
     document.getElementById('loadingState').classList.remove('visible');
-    if (data.status === 'already_have_monster') {
-  showEggResult('⭐ すでにモンスターがいます', detectedCity + 'のモンスターはすでに誕生しています。牧場で確認してください。');
-} else
     if (data.status === 'egg_picked') {
       const farm = getFarmData();
       farm[detectedCity] = { stage: 'egg', egg: data.egg, weatherInfo: detectedWeather, temp: detectedTemp };
@@ -1301,7 +1321,7 @@ async function hatchNow(city) {
       const monster = await res.json();
       if (!monster.error) {
         const f = getFarmData();
-       f[city] = { ...f[city], stage: 'child', monster, personality: getRandomPersonality() };
+        f[city] = { ...f[city], stage: 'child', monster, personality: getRandomPersonality() };
         saveFarmData(f);
       }
     } else if (entry.stage === 'child') {
@@ -1459,6 +1479,19 @@ function renderMonster(m) {
   const strongTags = (m.weatherStrong || []).map(w => '<span class="weather-tag strong">◎ ' + (WEATHER_LABELS[w] || w) + '</span>').join('');
   const weakTags = (m.weatherWeak || []).map(w => '<span class="weather-tag weak">✕ ' + (WEATHER_LABELS[w] || w) + '</span>').join('');
   document.getElementById('monWeather').innerHTML = strongTags + weakTags;
+  if (m.moves && m.moves.length > 0) {
+    document.getElementById('monMovesSection').style.display = 'block';
+    document.getElementById('monMoves').innerHTML = m.moves.map(move => {
+      const color = TYPE_COLORS[move.type] || '#ffffff';
+      return '<div class="move-item">' +
+        '<span class="move-name">' + move.name + '</span>' +
+        '<span class="move-type" style="border-color:' + color + ';color:' + color + '">' + move.type + '</span>' +
+        '<span class="move-power">威力 ' + move.power + '</span>' +
+      '</div>';
+    }).join('');
+  } else {
+    document.getElementById('monMovesSection').style.display = 'none';
+  }
   document.getElementById('resultCard').classList.add('visible');
 }
 
@@ -1474,7 +1507,7 @@ document.getElementById('nameInput').addEventListener('keydown', e => {
 });
 
 updateFarmCount();
-  renderTrainerCard();
+renderTrainerCard();
 detectLocation();
 </script>
 </body>
