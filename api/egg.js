@@ -8,8 +8,7 @@ async function redisGet(key) {
   });
   const data = await res.json();
   if (!data.result) return null;
-  const parsed = JSON.parse(data.result);
-  return typeof parsed === 'string' ? JSON.parse(parsed) : parsed;
+  return JSON.parse(data.result);
 }
 
 async function redisSet(key, value) {
@@ -20,7 +19,7 @@ async function redisSet(key, value) {
       Authorization: 'Bearer ' + process.env.UPSTASH_REDIS_REST_TOKEN,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify([JSON.stringify(value)]),
+    body: JSON.stringify(value),
   });
 }
 
