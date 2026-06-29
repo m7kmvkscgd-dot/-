@@ -11,7 +11,7 @@ async function redisGet(key) {
 
 async function redisSet(key, value) {
   const url = process.env.UPSTASH_REDIS_REST_URL + '/set/' + encodeURIComponent(key);
-  await fetch(url, {
+  const res = await fetch(url, {
     method: 'POST',
     headers: {
       Authorization: 'Bearer ' + process.env.UPSTASH_REDIS_REST_TOKEN,
@@ -19,6 +19,8 @@ async function redisSet(key, value) {
     },
     body: JSON.stringify([JSON.stringify(value)]),
   });
+  const data = await res.json();
+  return data;
 }
 
 module.exports = async function handler(req, res) {
@@ -116,7 +118,9 @@ module.exports = async function handler(req, res) {
       monster.imageError = imgError.message;
     }
 
-    await redisSet(cacheKey, monster);
+    const saveResult = await redisSet(cacheKey, monster);
+    monster.redisSaveResult = saveResult;
+
     return res.status(200).json(monster);
   } catch (e) {
     return res.status(500).json({ error: e.message });
