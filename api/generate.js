@@ -6,7 +6,9 @@ async function redisGet(key) {
     headers: { Authorization: 'Bearer ' + process.env.UPSTASH_REDIS_REST_TOKEN }
   });
   const data = await res.json();
-  return data.result ? JSON.parse(data.result) : null;
+ if (!data.result) return null;
+const parsed = JSON.parse(data.result);
+return typeof parsed === 'string' ? JSON.parse(parsed) : parsed;
 }
 
 async function redisSet(key, value) {
