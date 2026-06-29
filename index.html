@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ご当地モンスター生成器</title>
+<title>ご当地モンスター</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Hachi+Maru+Pop&family=Noto+Sans+JP:wght@400;700;900&display=swap');
 
@@ -97,7 +97,7 @@
     color: #f5d67a;
   }
 
-  .search-box {
+  .location-box {
     width: 100%;
     background: rgba(255,255,255,0.08);
     border: 1px solid rgba(255,255,255,0.2);
@@ -107,25 +107,12 @@
     display: flex;
     flex-direction: column;
     gap: 12px;
+    text-align: center;
   }
 
-  .input-row { display: flex; flex-direction: column; gap: 10px; }
-
-  input[type="text"] {
-    flex: 1;
-    background: rgba(255,255,255,0.1);
-    border: 1px solid rgba(255,255,255,0.25);
-    border-radius: 10px;
-    padding: 14px 16px;
-    color: #f0ebe0;
-    font-family: 'Noto Sans JP', sans-serif;
-    font-size: 1rem;
-    outline: none;
-    transition: border-color 0.15s;
-  }
-
-  input[type="text"]:focus { border-color: #f5d67a; }
-  input[type="text"]::placeholder { color: rgba(255,255,255,0.35); }
+  .location-text { font-size: 0.9rem; color: #f0ebe0; }
+  .location-city { font-size: 1.4rem; font-weight: 700; color: #f5d67a; margin: 4px 0; }
+  .location-sub { font-size: 0.75rem; color: #aaa; }
 
   .gen-btn {
     padding: 14px 24px;
@@ -138,28 +125,32 @@
     letter-spacing: 0.15em;
     cursor: pointer;
     transition: opacity 0.15s, transform 0.1s;
-    white-space: nowrap;
     box-shadow: 0 4px 15px rgba(192,57,43,0.4);
+    width: 100%;
   }
 
   .gen-btn:hover { opacity: 0.85; }
   .gen-btn:active { transform: scale(0.97); }
   .gen-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
-  .history-panel { display: flex; flex-wrap: wrap; gap: 6px; }
-
-  .history-chip {
-    padding: 5px 12px;
-    background: rgba(255,255,255,0.08);
-    border: 1px solid rgba(255,255,255,0.15);
-    border-radius: 999px;
-    font-size: 0.75rem;
-    color: #aaa;
+  .egg-btn {
+    padding: 14px 24px;
+    background: linear-gradient(135deg, #8e44ad, #6c3483);
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-family: 'Hachi Maru Pop', serif;
+    font-size: 1.1rem;
+    letter-spacing: 0.15em;
     cursor: pointer;
-    transition: border-color 0.15s, color 0.15s;
+    transition: opacity 0.15s, transform 0.1s;
+    box-shadow: 0 4px 15px rgba(142,68,173,0.4);
+    width: 100%;
   }
 
-  .history-chip:hover { border-color: #f5d67a; color: #f5d67a; }
+  .egg-btn:hover { opacity: 0.85; }
+  .egg-btn:active { transform: scale(0.97); }
+  .egg-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
   .loading-state { text-align: center; padding: 32px; display: none; }
   .loading-state.visible { display: block; }
@@ -249,6 +240,18 @@
 
   .monster-meta .city-name { font-size: 0.75rem; color: #888; margin-bottom: 8px; }
 
+  .stage-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .stage-badge.child { background: rgba(52,152,219,0.2); border: 1px solid #3498db; color: #3498db; }
+  .stage-badge.adult { background: rgba(245,214,122,0.2); border: 1px solid #f5d67a; color: #f5d67a; }
+
   .type-badge {
     display: inline-block;
     padding: 3px 10px;
@@ -283,12 +286,7 @@
   }
 
   .section-content { font-size: 0.88rem; line-height: 1.8; color: #f0ebe0; }
-
-  .lore-text {
-    font-size: 0.8rem;
-    line-height: 1.8;
-    color: #ccc;
-  }
+  .lore-text { font-size: 0.8rem; line-height: 1.8; color: #ccc; }
 
   .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
 
@@ -303,100 +301,115 @@
   .stat-item .stat-value { font-size: 1.2rem; font-weight: 700; color: #f5d67a; }
 
   .weather-affinity { display: flex; flex-wrap: wrap; gap: 6px; }
-
   .weather-tag { padding: 4px 10px; border-radius: 999px; font-size: 0.7rem; border: 1px solid; }
   .weather-tag.strong { border-color: #27ae60; color: #27ae60; }
   .weather-tag.weak { border-color: #c0392b; color: #c0392b; }
 
-  .zukan-panel { width: 100%; display: none; }
-  .zukan-panel.visible { display: block; }
+  /* 牧場 */
+  .farm-panel { width: 100%; display: none; }
+  .farm-panel.visible { display: block; }
 
-  .zukan-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .farm-grid { display: flex; flex-direction: column; gap: 12px; }
 
-  .zukan-card {
+  .farm-card {
     background: rgba(10,10,20,0.85);
-    border: 1px solid rgba(245,214,122,0.2);
+    border: 1px solid rgba(255,255,255,0.15);
     border-radius: 12px;
-    padding: 10px 8px;
-    text-align: center;
-    cursor: pointer;
-    transition: border-color 0.15s;
+    padding: 14px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .farm-card.egg { border-color: rgba(142,68,173,0.4); }
+  .farm-card.child { border-color: rgba(52,152,219,0.4); }
+  .farm-card.adult { border-color: rgba(245,214,122,0.4); }
+
+  .farm-icon {
+    width: 70px;
+    height: 70px;
+    border-radius: 10px;
     overflow: hidden;
+    flex-shrink: 0;
+    background: rgba(255,255,255,0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
   }
 
-  .zukan-card:hover { border-color: #f5d67a; }
-
-  .zukan-icon {
-    width: 80px;
-    height: 80px;
-    border-radius: 8px;
+  .farm-icon img {
+    width: 100%;
+    height: 100%;
     object-fit: cover;
-    display: none;
-    margin: 0 auto 4px;
   }
 
-  .zukan-emoji { font-size: 2rem; display: block; margin-bottom: 4px; }
-  .zukan-name { font-size: 0.7rem; color: #f5d67a; font-weight: 700; margin-bottom: 2px; }
-  .zukan-city { font-size: 0.62rem; color: #888; }
-  .zukan-weather { font-size: 0.6rem; color: #aaa; margin-top: 3px; }
+  .farm-info { flex: 1; min-width: 0; }
+  .farm-name { font-family: 'Hachi Maru Pop', serif; font-size: 1rem; color: #f5d67a; }
+  .farm-city { font-size: 0.72rem; color: #888; margin-bottom: 4px; }
+  .farm-status { font-size: 0.75rem; color: #aaa; }
+  .farm-timer { font-size: 0.8rem; color: #f5d67a; font-weight: 700; margin-top: 4px; }
 
-  .zukan-empty {
+  .farm-empty {
     text-align: center;
     color: #888;
     font-size: 0.85rem;
     padding: 40px 20px;
   }
 
-  .saved-badge {
-    display: inline-block;
-    background: rgba(39,174,96,0.2);
-    border: 1px solid #27ae60;
-    border-radius: 6px;
-    padding: 3px 8px;
-    font-size: 0.7rem;
-    color: #27ae60;
-    margin-bottom: 8px;
+  .egg-result {
+    width: 100%;
+    background: rgba(142,68,173,0.15);
+    border: 1px solid rgba(142,68,173,0.4);
+    border-radius: 16px;
+    padding: 24px;
+    text-align: center;
+    display: none;
   }
+
+  .egg-result.visible { display: block; }
+  .egg-result .egg-icon { font-size: 4rem; margin-bottom: 12px; }
+  .egg-result h3 { font-family: 'Hachi Maru Pop', serif; color: #f5d67a; margin-bottom: 8px; }
+  .egg-result p { font-size: 0.85rem; color: #ccc; line-height: 1.7; }
 </style>
 </head>
 <body>
-
 <div class="hero">
   <div class="hero-bg"></div>
   <div class="hero-content">
 
     <div class="logo">
-      <h1>ご当地モンスター<br>生成器</h1>
+      <h1>ご当地モンスター</h1>
       <p>MONSTER GENERATOR — PROTOTYPE</p>
     </div>
 
-    <p class="tagline">全国のご当地モンスターを集めよう！</p>
+    <p class="tagline">現地に行って卵を拾おう！</p>
 
     <div class="tab-bar">
       <button class="tab-btn active" onclick="switchTab('generate')">生成</button>
-      <button class="tab-btn" onclick="switchTab('zukan')">図鑑 <span id="zukanCount"></span></button>
-    </div>
-
-    <div id="generateTab" style="width:100%;display:flex;flex-direction:column;gap:20px;">
-      <div class="search-box">
-        <div class="input-row">
-          <input type="text" id="cityInput" placeholder="市の名前を入力（例：大阪市、金沢市）" />
-          <button class="gen-btn" id="genBtn" onclick="generate()">生成</button>
-        </div>
-        <div id="historyWrap" style="display:none">
-          <div class="history-panel" id="historyPanel"></div>
-        </div>
+      <button class="tab-btn" onclick="switchTab('farm')">牧場 <span id="farmCount"></span></button>
+    </div><div id="generateTab" style="width:100%;display:flex;flex-direction:column;gap:20px;">
+      <div class="location-box">
+        <div class="location-text">現在地</div>
+        <div class="location-city" id="detectedCity">取得中...</div>
+        <div class="location-sub" id="detectedSub"></div>
+        <button class="egg-btn" id="eggBtn" onclick="pickupEgg()" disabled>📍 この場所の卵を拾う</button>
       </div>
 
       <div class="loading-state" id="loadingState">
         <div class="spinner"></div>
-        <div class="loading-text" id="loadingText">市の歴史・文化を調査中...</div>
+        <div class="loading-text" id="loadingText">現在地を取得中...</div>
       </div>
 
       <div class="error-state" id="errorState"></div>
 
+      <div class="egg-result" id="eggResult">
+        <div class="egg-icon">🥚</div>
+        <h3 id="eggResultTitle"></h3>
+        <p id="eggResultText"></p>
+      </div>
+
       <div class="card" id="resultCard">
-        <div id="savedBadge" style="display:none"><span class="saved-badge">✓ 図鑑に保存済み</span></div>
         <div class="card-header">
           <div class="monster-icon-wrap">
             <img class="monster-icon-img" id="monIconImg" src="" alt="" />
@@ -404,27 +417,24 @@
           </div>
           <div class="monster-meta">
             <div class="city-name" id="monCity"></div>
+            <div id="monStageBadge"></div>
             <h2 id="monName"></h2>
             <div id="monTypes"></div>
             <div class="capture-info" id="captureInfo"></div>
           </div>
         </div>
-
         <div class="section">
           <div class="section-label">コンセプト</div>
           <div class="section-content" id="monConcept"></div>
         </div>
-
         <div class="section">
           <div class="section-label">ステータス</div>
           <div class="stat-grid" id="monStats"></div>
         </div>
-
         <div class="section">
           <div class="section-label">天気相性</div>
           <div class="weather-affinity" id="monWeather"></div>
         </div>
-
         <div class="section" style="margin-bottom:0">
           <div class="section-label">由来・伝承</div>
           <div class="lore-text" id="monLore"></div>
@@ -432,8 +442,8 @@
       </div>
     </div>
 
-    <div class="zukan-panel" id="zukanTab">
-      <div id="zukanGrid"></div>
+    <div class="farm-panel" id="farmTab">
+      <div class="farm-grid" id="farmGrid"></div>
     </div>
 
   </div>
@@ -443,11 +453,15 @@
 const TYPE_COLORS = {
   '炎': '#ff6644', '水': '#4499ff', '雷': '#ffdd00', '氷': '#88eeff',
   '風': '#44ffaa', '土': '#cc9944', '闇': '#cc66ff', '光': '#ffffcc', '鋼': '#aaaacc',
+  'fire': '#ff6644', 'water': '#4499ff', 'thunder': '#ffdd00', 'ice': '#88eeff',
+  'wind': '#44ffaa', 'earth': '#cc9944', 'dark': '#cc66ff', 'light': '#ffffcc',
+  'spirit': '#cc99ff', 'ghost': '#9988cc',
 };
 
 const WEATHER_LABELS = {
   'clear': '☀️ 晴れ', 'rain': '🌧️ 雨', 'thunder': '⛈️ 嵐',
   'snow': '❄️ 雪', 'wind': '💨 強風', 'cloud': '☁️ 曇り', 'fog': '🌫️ 霧',
+  'windy': '💨 強風', 'hot': '🔥 猛暑',
 };
 
 const WEATHER_CODES = {
@@ -459,158 +473,339 @@ const WEATHER_CODES = {
   95: 'thunder', 96: 'thunder', 99: 'thunder',
 };
 
-let history = [];
-let capturedWeatherType = '';
-let capturedTemp = '';
-let currentTab = 'generate';
+// 東京23区・大阪24区の座標判定
+const SPECIAL_WARDS = {
+  tokyo: {
+    bounds: { minLat: 35.53, maxLat: 35.82, minLon: 139.55, maxLon: 139.92 },
+    wards: [
+      { name: '千代田区', minLat: 35.668, maxLat: 35.702, minLon: 139.737, maxLon: 139.775 },
+      { name: '中央区', minLat: 35.658, maxLat: 35.682, minLon: 139.758, maxLon: 139.800 },
+      { name: '港区', minLat: 35.635, maxLat: 35.672, minLon: 139.718, maxLon: 139.770 },
+      { name: '新宿区', minLat: 35.680, maxLat: 35.720, minLon: 139.690, maxLon: 139.740 },
+      { name: '文京区', minLat: 35.700, maxLat: 35.735, minLon: 139.730, maxLon: 139.770 },
+      { name: '台東区', minLat: 35.703, maxLat: 35.730, minLon: 139.770, maxLon: 139.810 },
+      { name: '墨田区', minLat: 35.695, maxLat: 35.730, minLon: 139.790, maxLon: 139.830 },
+      { name: '江東区', minLat: 35.645, maxLat: 35.700, minLon: 139.790, maxLon: 139.860 },
+      { name: '品川区', minLat: 35.590, maxLat: 35.645, minLon: 139.700, maxLon: 139.760 },
+      { name: '目黒区', minLat: 35.620, maxLat: 35.660, minLon: 139.670, maxLon: 139.720 },
+      { name: '大田区', minLat: 35.545, maxLat: 35.610, minLon: 139.680, maxLon: 139.760 },
+      { name: '世田谷区', minLat: 35.610, maxLat: 35.670, minLon: 139.600, maxLon: 139.680 },
+      { name: '渋谷区', minLat: 35.645, maxLat: 35.680, minLon: 139.680, maxLon: 139.720 },
+      { name: '中野区', minLat: 35.695, maxLat: 35.730, minLon: 139.640, maxLon: 139.680 },
+      { name: '杉並区', minLat: 35.680, maxLat: 35.720, minLon: 139.590, maxLon: 139.650 },
+      { name: '豊島区', minLat: 35.720, maxLat: 35.750, minLon: 139.700, maxLon: 139.740 },
+      { name: '北区', minLat: 35.745, maxLat: 35.790, minLon: 139.710, maxLon: 139.760 },
+      { name: '荒川区', minLat: 35.730, maxLat: 35.760, minLon: 139.770, maxLon: 139.810 },
+      { name: '板橋区', minLat: 35.745, maxLat: 35.800, minLon: 139.660, maxLon: 139.720 },
+      { name: '練馬区', minLat: 35.730, maxLat: 35.790, minLon: 139.580, maxLon: 139.660 },
+      { name: '足立区', minLat: 35.760, maxLat: 35.820, minLon: 139.750, maxLon: 139.870 },
+      { name: '葛飾区', minLat: 35.730, maxLat: 35.790, minLon: 139.830, maxLon: 139.900 },
+      { name: '江戸川区', minLat: 35.680, maxLat: 35.750, minLon: 139.840, maxLon: 139.930 },
+    ]
+  },
+  osaka: {
+    bounds: { minLat: 34.58, maxLat: 34.73, minLon: 135.45, maxLon: 135.58 },
+    wards: [
+      { name: '都島区', minLat: 34.693, maxLat: 34.720, minLon: 135.520, maxLon: 135.545 },
+      { name: '福島区', minLat: 34.690, maxLat: 34.710, minLon: 135.460, maxLon: 135.490 },
+      { name: '此花区', minLat: 34.670, maxLat: 34.700, minLon: 135.430, maxLon: 135.475 },
+      { name: '西区', minLat: 34.670, maxLat: 34.695, minLon: 135.480, maxLon: 135.510 },
+      { name: '港区', minLat: 34.650, maxLat: 34.678, minLon: 135.455, maxLon: 135.490 },
+      { name: '大正区', minLat: 34.630, maxLat: 34.665, minLon: 135.455, maxLon: 135.490 },
+      { name: '天王寺区', minLat: 34.648, maxLat: 34.672, minLon: 135.505, maxLon: 135.530 },
+      { name: '浪速区', minLat: 34.648, maxLat: 34.668, minLon: 135.490, maxLon: 135.515 },
+      { name: '西淀川区', minLat: 34.700, maxLat: 34.730, minLon: 135.430, maxLon: 135.465 },
+      { name: '淀川区', minLat: 34.715, maxLat: 34.745, minLon: 135.470, maxLon: 135.510 },
+      { name: '東淀川区', minLat: 34.730, maxLat: 34.760, minLon: 135.510, maxLon: 135.545 },
+      { name: '東成区', minLat: 34.665, maxLat: 34.690, minLon: 135.530, maxLon: 135.555 },
+      { name: '生野区', minLat: 34.645, maxLat: 34.672, minLon: 135.530, maxLon: 135.560 },
+      { name: '旭区', minLat: 34.710, maxLat: 34.735, minLon: 135.540, maxLon: 135.565 },
+      { name: '城東区', minLat: 34.690, maxLat: 34.715, minLon: 135.540, maxLon: 135.565 },
+      { name: '鶴見区', minLat: 34.675, maxLat: 34.700, minLon: 135.555, maxLon: 135.585 },
+      { name: '阿倍野区', minLat: 34.625, maxLat: 34.652, minLon: 135.505, maxLon: 135.530 },
+      { name: '住之江区', minLat: 34.585, maxLat: 34.630, minLon: 135.465, maxLon: 135.510 },
+      { name: '住吉区', minLat: 34.600, maxLat: 34.635, minLon: 135.495, maxLon: 135.530 },
+      { name: '東住吉区', minLat: 34.600, maxLat: 34.635, minLon: 135.520, maxLon: 135.550 },
+      { name: '平野区', minLat: 34.590, maxLat: 34.625, minLon: 135.530, maxLon: 135.575 },
+      { name: '西成区', minLat: 34.615, maxLat: 34.650, minLon: 135.475, maxLon: 135.510 },
+      { name: '北区', minLat: 34.695, maxLat: 34.720, minLon: 135.490, maxLon: 135.525 },
+      { name: '中央区', minLat: 34.668, maxLat: 34.698, minLon: 135.495, maxLon: 135.530 },
+    ]
+  }
+};
 
-function saveMonster(city, monster) {
-  localStorage.setItem('monster_' + city, JSON.stringify(monster));
-  updateZukanCount();
-}
-
-function loadMonster(city) {
-  const data = localStorage.getItem('monster_' + city);
-  return data ? JSON.parse(data) : null;
-}
-
-function getAllMonsters() {
-  const monsters = [];
-  for (let i = 0; i < localStorage.length; i++) {
-    const key = localStorage.key(i);
-    if (key.startsWith('monster_')) {
-      try { monsters.push(JSON.parse(localStorage.getItem(key))); } catch(e) {}
+function detectWard(lat, lon) {
+  for (const [city, data] of Object.entries(SPECIAL_WARDS)) {
+    const b = data.bounds;
+    if (lat >= b.minLat && lat <= b.maxLat && lon >= b.minLon && lon <= b.maxLon) {
+      for (const ward of data.wards) {
+        if (lat >= ward.minLat && lat <= ward.maxLat && lon >= ward.minLon && lon <= ward.maxLon) {
+          return ward.name;
+        }
+      }
+      return city === 'tokyo' ? '東京都内' : '大阪市内';
     }
   }
-  return monsters;
+  return null;
 }
 
-function updateZukanCount() {
-  const count = getAllMonsters().length;
-  document.getElementById('zukanCount').textContent = count > 0 ? '(' + count + ')' : '';
+function getUserId() {
+  let uid = localStorage.getItem('userId');
+  if (!uid) {
+    uid = 'user_' + Math.random().toString(36).slice(2) + Date.now().toString(36);
+    localStorage.setItem('userId', uid);
+  }
+  return uid;
+}
+
+function getFarmData() {
+  const data = localStorage.getItem('farmData');
+  return data ? JSON.parse(data) : {};
+}
+
+function saveFarmData(data) {
+  localStorage.setItem('farmData', JSON.stringify(data));
+  updateFarmCount();
+}
+
+function updateFarmCount() {
+  const farm = getFarmData();
+  const count = Object.keys(farm).length;
+  document.getElementById('farmCount').textContent = count > 0 ? '(' + count + ')' : '';
+}
+
+function formatTimer(ms) {
+  if (ms <= 0) return '孵化準備完了！';
+  const h = Math.floor(ms / 3600000);
+  const m = Math.floor((ms % 3600000) / 60000);
+  const s = Math.floor((ms % 60000) / 1000);
+  if (h > 0) return h + '時間' + m + '分';
+  if (m > 0) return m + '分' + s + '秒';
+  return s + '秒';
+}
+
+let currentTab = 'generate';
+let detectedCity = '';
+let detectedWeather = '';
+let detectedTemp = '';
+let farmTimerInterval = null;
+
+async function detectLocation() {
+  document.getElementById('detectedCity').textContent = '取得中...';
+  document.getElementById('eggBtn').disabled = true;
+
+  try {
+    const pos = await new Promise((resolve, reject) =>
+      navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 8000 })
+    );
+    const { latitude: lat, longitude: lon } = pos.coords;
+
+    // 東京23区・大阪24区チェック
+    const ward = detectWard(lat, lon);
+
+    // 逆ジオコーディング
+    let cityName = ward;
+    if (!cityName) {
+      const geoRes = await fetch('https://nominatim.openstreetmap.org/reverse?lat=' + lat + '&lon=' + lon + '&format=json&accept-language=ja');
+      const geoData = await geoRes.json();
+      const addr = geoData.address || {};
+      cityName = addr.city || addr.town || addr.village || addr.county || '不明';
+    }
+
+    detectedCity = cityName;
+    document.getElementById('detectedCity').textContent = cityName;
+    document.getElementById('detectedSub').textContent = '緯度 ' + lat.toFixed(3) + ' 経度 ' + lon.toFixed(3);
+
+    // 天気取得
+    try {
+      const weatherRes = await fetch('https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lon + '&current=temperature_2m,pressure_msl,weathercode&timezone=auto');
+      const weatherData = await weatherRes.json();
+      const c = weatherData.current;
+      const weatherType = WEATHER_CODES[c.weathercode] || 'clear';
+      detectedWeather = weatherType;
+      detectedTemp = c.temperature_2m;
+      const wLabel = WEATHER_LABELS[weatherType] || weatherType;
+      document.getElementById('detectedSub').textContent = wLabel + ' ' + c.temperature_2m + '°C';
+    } catch(e) {}
+
+    document.getElementById('eggBtn').disabled = false;
+
+  } catch(e) {
+    document.getElementById('detectedCity').textContent = '位置情報を取得できませんでした';
+    document.getElementById('detectedSub').textContent = '位置情報の許可が必要です';
+  }
+}
+
+async function pickupEgg() {
+  if (!detectedCity) return;
+  const userId = getUserId();
+
+  document.getElementById('eggBtn').disabled = true;
+  document.getElementById('loadingState').classList.add('visible');
+  document.getElementById('loadingText').textContent = '卵を探しています...';
+  document.getElementById('eggResult').classList.remove('visible');
+  document.getElementById('resultCard').classList.remove('visible');
+  document.getElementById('errorState').classList.remove('visible');
+
+  try {
+    const res = await fetch('/api/egg', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'pickup', city: detectedCity, userId }),
+    });
+    const data = await res.json();
+
+    document.getElementById('loadingState').classList.remove('visible');
+
+    if (data.status === 'egg_picked') {
+      const farm = getFarmData();
+      farm[detectedCity] = { stage: 'egg', egg: data.egg, weatherInfo: detectedWeather, temp: detectedTemp };
+      saveFarmData(farm);
+      showEggResult('🥚 卵を拾いました！', detectedCity + 'の卵を手に入れました。\n5時間後に孵化します。牧場で確認してください！');
+    } else if (data.status === 'already_have_egg') {
+      showEggResult('🥚 すでに卵があります', detectedCity + 'の卵はすでに持っています。牧場で確認してください。');
+    } else if (data.status === 'already_generated') {
+      renderMonster(data.monster);
+    }
+  } catch(e) {
+    document.getElementById('loadingState').classList.remove('visible');
+    const errEl = document.getElementById('errorState');
+    errEl.textContent = 'エラー: ' + e.message;
+    errEl.classList.add('visible');
+  } finally {
+    document.getElementById('eggBtn').disabled = false;
+  }
+}
+
+function showEggResult(title, text) {
+  document.getElementById('eggResultTitle').textContent = title;
+  document.getElementById('eggResultText').textContent = text;
+  document.getElementById('eggResult').classList.add('visible');
+}
+
+async function checkAndHatch(city) {
+  const userId = getUserId();
+  const farm = getFarmData();
+  const entry = farm[city];
+  if (!entry) return;
+
+  const now = Date.now();
+  const egg = entry.egg;
+
+  if (now >= egg.growAt) {
+    // 大人になる時間
+    if (entry.stage !== 'adult' || !entry.monster || entry.monster.stage !== 'adult') {
+      const res = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ city, weatherInfo: entry.weatherInfo, stage: 'adult' }),
+      });
+      const monster = await res.json();
+      farm[city] = { ...entry, stage: 'adult', monster };
+      saveFarmData(farm);
+    }
+  } else if (now >= egg.hatchAt) {
+    // 子供になる時間
+    if (entry.stage !== 'child' && entry.stage !== 'adult') {
+      const res = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ city, weatherInfo: entry.weatherInfo, stage: 'child' }),
+      });
+      const monster = await res.json();
+      farm[city] = { ...entry, stage: 'child', monster };
+      saveFarmData(farm);
+    }
+  }
 }
 
 function switchTab(tab) {
   currentTab = tab;
   const btns = document.querySelectorAll('.tab-btn');
   btns[0].classList.toggle('active', tab === 'generate');
-  btns[1].classList.toggle('active', tab === 'zukan');
+  btns[1].classList.toggle('active', tab === 'farm');
   document.getElementById('generateTab').style.display = tab === 'generate' ? 'flex' : 'none';
-  document.getElementById('zukanTab').classList.toggle('visible', tab === 'zukan');
-  if (tab === 'zukan') renderZukan();
+  document.getElementById('farmTab').classList.toggle('visible', tab === 'farm');
+  if (tab === 'farm') renderFarm();
 }
 
-function renderZukan() {
-  const monsters = getAllMonsters();
-  const grid = document.getElementById('zukanGrid');
-  if (monsters.length === 0) {
-    grid.innerHTML = '<div class="zukan-empty">まだモンスターがいません<br>市を訪れて捕まえよう！</div>';
-    return;
-  }
-  grid.innerHTML = '<div class="zukan-grid">' + monsters.map(m => {
-    const wLabel = m.capturedWeather ? (WEATHER_LABELS[m.capturedWeather] || m.capturedWeather) : '';
-    const imgSrc = m.imageUrl || null;
-    const iconHtml = imgSrc
-      ? '<img class="zukan-icon" src="' + imgSrc + '" alt="' + m.name + '" style="display:block" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'block\'" /><span class="zukan-emoji" style="display:none">' + (m.emoji || '👾') + '</span>'
-      : '<span class="zukan-emoji">' + (m.emoji || '👾') + '</span>';
-    return '<div class="zukan-card" onclick="showFromZukan(\'' + m.city + '\')">' +
-      iconHtml +
-      '<div class="zukan-name">' + m.name + '</div>' +
-      '<div class="zukan-city">' + m.city + '</div>' +
-      (wLabel ? '<div class="zukan-weather">' + wLabel + '</div>' : '') +
-      '</div>';
-  }).join('') + '</div>';
-}
+async function renderFarm() {
+  const farm = getFarmData();
+  const grid = document.getElementById('farmGrid');
 
-function showFromZukan(city) {
-  const m = loadMonster(city);
-  if (!m) return;
-  switchTab('generate');
-  capturedWeatherType = m.capturedWeather || '';
-  capturedTemp = m.capturedTemp || '';
-  renderMonster(m);
-  document.getElementById('cityInput').value = city;
-}
-
-async function generate(cityOverride) {
-  const input = document.getElementById('cityInput');
-  const city = cityOverride || input.value.trim();
-  if (!city) return;
-  if (!cityOverride) input.value = city;
-
-  const saved = loadMonster(city);
-  if (saved) {
-    capturedWeatherType = saved.capturedWeather || '';
-    capturedTemp = saved.capturedTemp || '';
-    renderMonster(saved);
-    document.getElementById('savedBadge').style.display = 'block';
+  if (Object.keys(farm).length === 0) {
+    grid.innerHTML = '<div class="farm-empty">まだモンスターがいません<br>現地に行って卵を拾おう！</div>';
     return;
   }
 
-  document.getElementById('savedBadge').style.display = 'none';
-  document.getElementById('genBtn').disabled = true;
-  document.getElementById('loadingState').classList.add('visible');
-  document.getElementById('resultCard').classList.remove('visible');
-  document.getElementById('errorState').classList.remove('visible');
-
-  const steps = ['市の歴史・文化を調査中...', '特産品・地形を分析中...', 'モンスターを設計中...', 'イラストを生成中...'];
-  let stepIdx = 0;
-  const stepInterval = setInterval(() => {
-    stepIdx = (stepIdx + 1) % steps.length;
-    document.getElementById('loadingText').textContent = steps[stepIdx];
-  }, 1200);
-
-  let weatherInfo = 'unknown';
-  capturedWeatherType = '';
-  capturedTemp = '';
-
-  try {
-    const pos = await new Promise((resolve, reject) =>
-      navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 })
-    );
-    const { latitude: lat, longitude: lon } = pos.coords;
-    const weatherRes = await fetch('https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lon + '&current=temperature_2m,pressure_msl,weathercode&timezone=auto');
-    const weatherData = await weatherRes.json();
-    const c = weatherData.current;
-    const weatherType = WEATHER_CODES[c.weathercode] || 'clear';
-    capturedWeatherType = weatherType;
-    capturedTemp = c.temperature_2m;
-    weatherInfo = 'weather: ' + weatherType + ', temperature: ' + c.temperature_2m + 'C, pressure: ' + c.pressure_msl + 'hPa';
-  } catch(e) {
-    weatherInfo = 'unknown';
+  // 孵化チェック
+  for (const city of Object.keys(farm)) {
+    await checkAndHatch(city);
   }
 
-  try {
-    const response = await fetch('/api/generate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ city, weatherInfo }),
-    });
+  const updatedFarm = getFarmData();
+  const now = Date.now();
 
-    const data = await response.json();
-    clearInterval(stepInterval);
-    if (data.error) throw new Error(data.error);
+  grid.innerHTML = Object.entries(updatedFarm).map(([city, entry]) => {
+    const egg = entry.egg;
+    let iconHtml = '';
+    let statusText = '';
+    let timerText = '';
+    let cardClass = 'farm-card';
 
-    data.capturedWeather = capturedWeatherType;
-    data.capturedTemp = capturedTemp;
-    saveMonster(city, data);
-    renderMonster(data);
-
-    if (!history.includes(city)) {
-      history.unshift(city);
-      if (history.length > 8) history.pop();
-      renderHistory();
+    if (entry.stage === 'egg') {
+      iconHtml = '<div class="farm-icon">🥚</div>';
+      const remaining = egg.hatchAt - now;
+      statusText = '卵';
+      timerText = remaining > 0 ? '孵化まで ' + formatTimer(remaining) : '孵化準備完了！';
+      cardClass += ' egg';
+    } else if (entry.stage === 'child') {
+      const m = entry.monster;
+      const imgSrc = m && m.imageUrl;
+      iconHtml = imgSrc
+        ? '<div class="farm-icon"><img src="' + imgSrc + '" alt="' + (m.name || '') + '" /></div>'
+        : '<div class="farm-icon">' + (m ? m.emoji || '👶' : '👶') + '</div>';
+      const remaining = egg.growAt - now;
+      statusText = '子供';
+      timerText = remaining > 0 ? '大人まで ' + formatTimer(remaining) : '進化準備完了！';
+      cardClass += ' child';
+    } else {
+      const m = entry.monster;
+      const imgSrc = m && m.imageUrl;
+      iconHtml = imgSrc
+        ? '<div class="farm-icon"><img src="' + imgSrc + '" alt="' + (m.name || '') + '" /></div>'
+        : '<div class="farm-icon">' + (m ? m.emoji || '👾' : '👾') + '</div>';
+      statusText = '大人';
+      cardClass += ' adult';
     }
 
-  } catch (e) {
-    clearInterval(stepInterval);
-    const errEl = document.getElementById('errorState');
-    errEl.textContent = 'エラー: ' + e.message;
-    errEl.classList.add('visible');
-  } finally {
-    document.getElementById('loadingState').classList.remove('visible');
-    document.getElementById('genBtn').disabled = false;
-  }
+    const m = entry.monster;
+    const name = m ? m.name : city + 'の卵';
+
+    return '<div class="' + cardClass + '" onclick="showFarmMonster(\'' + city + '\')">' +
+      iconHtml +
+      '<div class="farm-info">' +
+        '<div class="farm-city">' + city + '</div>' +
+        '<div class="farm-name">' + name + '</div>' +
+        '<div class="farm-status">' + statusText + '</div>' +
+        (timerText ? '<div class="farm-timer">' + timerText + '</div>' : '') +
+      '</div>' +
+    '</div>';
+  }).join('');
+
+  // タイマー更新
+  if (farmTimerInterval) clearInterval(farmTimerInterval);
+  farmTimerInterval = setInterval(() => {
+    if (currentTab === 'farm') renderFarm();
+  }, 1000);
+}
+
+function showFarmMonster(city) {
+  const farm = getFarmData();
+  const entry = farm[city];
+  if (!entry || !entry.monster) return;
+  switchTab('generate');
+  renderMonster(entry.monster);
 }
 
 function renderMonster(m) {
@@ -619,12 +814,17 @@ function renderMonster(m) {
   document.getElementById('monConcept').textContent = m.concept;
   document.getElementById('monLore').textContent = m.lore;
 
+  const stageBadge = document.getElementById('monStageBadge');
+  if (m.stage === 'child') {
+    stageBadge.innerHTML = '<span class="stage-badge child">👶 子供</span>';
+  } else {
+    stageBadge.innerHTML = '<span class="stage-badge adult">⭐ 大人</span>';
+  }
+
   const imgEl = document.getElementById('monIconImg');
   const emojiEl = document.getElementById('monEmoji');
-  const imgSrc = m.imageUrl || null;
-
-  if (imgSrc) {
-    imgEl.src = imgSrc;
+  if (m.imageUrl) {
+    imgEl.src = m.imageUrl;
     imgEl.style.display = 'block';
     emojiEl.style.display = 'none';
     imgEl.onerror = function() {
@@ -643,19 +843,6 @@ function renderMonster(m) {
     const color = TYPE_COLORS[t] || '#ffffff';
     return '<span class="type-badge" style="border-color:' + color + ';color:' + color + '">' + t + 'タイプ</span>';
   }).join('');
-
-  const captureEl = document.getElementById('captureInfo');
-  const wType = m.capturedWeather || capturedWeatherType;
-  const temp = m.capturedTemp !== undefined ? m.capturedTemp : capturedTemp;
-  if (wType) {
-    const wLabel = WEATHER_LABELS[wType] || wType;
-    const tLabel = temp !== '' ? temp + '°C' : '';
-    captureEl.innerHTML =
-      '<span class="capture-badge">捕獲天気：' + wLabel + '</span>' +
-      (tLabel ? '<span class="capture-badge">気温：' + tLabel + '</span>' : '');
-  } else {
-    captureEl.innerHTML = '';
-  }
 
   const stats = m.stats || {};
   document.getElementById('monStats').innerHTML = [
@@ -679,21 +866,8 @@ function renderMonster(m) {
   document.getElementById('resultCard').classList.add('visible');
 }
 
-function renderHistory() {
-  const wrap = document.getElementById('historyWrap');
-  const panel = document.getElementById('historyPanel');
-  if (history.length === 0) { wrap.style.display = 'none'; return; }
-  wrap.style.display = 'block';
-  panel.innerHTML = history.map(c =>
-    '<span class="history-chip" onclick="generate(\'' + c + '\')">' + c + '</span>'
-  ).join('');
-}
-
-document.getElementById('cityInput').addEventListener('keydown', e => {
-  if (e.key === 'Enter') generate();
-});
-
-updateZukanCount();
+updateFarmCount();
+detectLocation();
 </script>
 </body>
 </html>
