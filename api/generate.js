@@ -25,13 +25,12 @@ module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
-  const { city, weatherInfo, stage } = req.body;
+  const { city, weatherInfo, stage, childMonster } = req.body;
   if (!city) {
     return res.status(400).json({ error: 'City is required' });
   }
 
   const cacheKey = 'monster:' + (stage || 'adult') + ':' + city;
-
   const cached = await redisGet(cacheKey);
   if (cached) {
     return res.status(200).json(cached);
@@ -41,11 +40,16 @@ module.exports = async function handler(req, res) {
     const weather = weatherInfo || 'unknown';
     const isChild = stage === 'child';
 
-    const stageNote = isChild
-      ? 'This is the CHILD form. Make it look young, small, cute, and less powerful than the adult form.'
-      : 'This is the ADULT form. Make it look mature, powerful, and fully evolved.';
+    let stageNote = '';
+    if (isChild) {
+      stageNote = 'This is the CHILD form. Make it look young, small, and cute. It should hint at what it will become as an adult but be clearly immature and less powerful.';
+    } else if (childMonster) {
+      stageNote = 'This is the ADULT form. It is the evolved version of this child monster: name="' + childMonster.name + '", concept="' + childMonster.concept + '", types=' + JSON.stringify(childMonster.types) + '. The adult must look like a clear evolution of the child - same color scheme, same general theme, but larger, more powerful, and more detailed. Keep the same name, concept, lore, and types as the child.';
+    } else {
+      stageNote = 'This is the ADULT form. Make it look mature, powerful, and fully evolved.';
+    }
 
-    const content = 'You are a game designer. Design a local monster for the Japanese city of ' + city + '. Research its history, geography, local specialties, legends, and modern characteristics. Current weather at player location: ' + weather + '. ' + stageNote + ' Output ONLY a valid JSON object with no explanation, no markdown, no code blocks. The JSON must use double quotes only. Format: {"name":"katakana monster name","emoji":"single emoji","city":"' + city + '","concept":"concept in Japanese","types":["type1","type2"],"stats":{"hp":100,"atk":50,"def":40,"spd":35},"weatherStrong":["clear","rain"],"weatherWeak":["snow","thunder"],"promptEn":["feature1","feature2","feature3","feature4","feature5","512x512px square format, soft gradient background matching the monster color theme NOT transparent, pokemon-style cute chibi character centered taking 70% of image, simple beautiful background with nature or environment elements matching the monster type, Japanese anime RPG game art","color palette and mood"],"lore":"lore in Japanese"}';
+    const content = 'You are a game designer. Design a local monster for the Japanese city of ' + city + '. Research its history, geography, local specialties, legends, and modern characteristics. Current weather at player location: ' + weather + '. ' + stageNote + ' Output ONLY a valid JSON object with no explanation, no markdown, no code blocks. The JSON must use double quotes only. Format: {"name":"katakana monster name","emoji":"single emoji","city":"' + city + '","concept":"concept in Japanese","types":["type1","type2"],"stats":{"hp":100,"atk":50,"def":40,"spd":35},"weatherStrong":["clear","rain"],"weatherWeak":["snow","thunder"],"promptEn":["feature1","feature2","feature3","512x512px square format, soft gradient background NOT transparent, pokemon-style cute chibi character centered taking 70% of image, simple beautiful background with nature or environment elements matching the monster type, Japanese anime RPG game art","color palette and mood"],"lore":"lore in Japanese"}';
 
     const claudeRes = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -70,8 +74,17 @@ module.exports = async function handler(req, res) {
     if (!match) {
       return res.status(500).json({ error: 'No JSON found in response' });
     }
-    const monster = JSON.parse(match[0]);
+    let monster = JSON.parse(match[0]);
     monster.stage = stage || 'adult';
+
+    // 大人の場合は子供の名前・lore・conceptを引き継ぐ
+    if (!isChild && childMonster) {
+      monster.name = childMonster.name;
+      monster.concept = childMonster.concept;
+      monster.lore = childMonster.lore;
+      monster.types = childMonster.types;
+      monster.emoji = childMonster.emoji;
+    }
 
     try {
       const imagePrompt = (monster.promptEn || []).join(', ');
@@ -105,7 +118,6 @@ module.exports = async function handler(req, res) {
     }
 
     await redisSet(cacheKey, monster);
-
     return res.status(200).json(monster);
   } catch (e) {
     return res.status(500).json({ error: e.message });
