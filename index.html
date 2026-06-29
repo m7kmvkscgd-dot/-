@@ -1570,6 +1570,8 @@ function pickupTokusanhin(city) {
   const data = getTokusanhinData();
   data.inventory[item.id] = (data.inventory[item.id] || 0) + 1;
   data.lastPickup[city] = Date.now();
+  if (!data.discovered) data.discovered = {};
+  data.discovered[item.id] = true;
   saveTokusanhinData(data);
   return item;
 }
@@ -1643,24 +1645,65 @@ function renderTrainerCard() {
     '</div>';
 }
 
+let showingZukan = false;
+
 function renderTokusanhinPanel() {
   const inventory = getInventoryList();
+  const data = getTokusanhinData();
+  const discovered = data.discovered || {};
+  const discoveredCount = Object.keys(discovered).length;
+  const totalCount = Object.values(TOKUSANHIN).reduce((sum, items) => sum + items.length, 0);
   const panel = document.getElementById('tokusanhinPanel');
-  if (inventory.length === 0) {
-    panel.innerHTML = '<div class="tokusanhin-empty">特産品がありません<br>現地を訪問してゲットしよう！<br><span style="font-size:0.75rem;color:#666">卵を拾うと同時にもらえます（18時間ごと）</span></div>';
+
+  const toggleBtn = '<button onclick="toggleZukan()" style="width:100%;margin-bottom:12px;padding:10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:#aaa;font-family:\'Noto Sans JP\',sans-serif;font-size:0.82rem;cursor:pointer;">' +
+    (showingZukan ? '🎒 所持品に戻る' : '📖 特産品図鑑を見る（' + discoveredCount + '/' + totalCount + '）') +
+  '</button>';
+
+  if (showingZukan) {
+    let zukanHtml = toggleBtn;
+    zukanHtml += '<div style="display:flex;flex-direction:column;gap:16px;">';
+    for (const [pref, items] of Object.entries(TOKUSANHIN)) {
+      const discoveredInPref = items.filter(i => discovered[i.id]);
+      if (discoveredInPref.length === 0) continue;
+      zukanHtml += '<div>' +
+        '<div style="font-size:0.7rem;color:#888;margin-bottom:6px;letter-spacing:0.1em">' + pref + '　' + discoveredInPref.length + '/' + items.length + '</div>' +
+        '<div style="display:flex;flex-wrap:wrap;gap:8px;">' +
+        items.map(item => {
+          const found = discovered[item.id];
+          return '<div style="background:' + (found ? 'rgba(245,214,122,0.1)' : 'rgba(255,255,255,0.03)') + ';border:1px solid ' + (found ? 'rgba(245,214,122,0.3)' : 'rgba(255,255,255,0.06)') + ';border-radius:8px;padding:8px 10px;text-align:center;min-width:70px;">' +
+            '<div style="font-size:1.5rem;margin-bottom:2px">' + (found ? item.emoji : '❓') + '</div>' +
+            '<div style="font-size:0.62rem;color:' + (found ? '#f5d67a' : '#444') + '">' + (found ? item.name : '？？？') + '</div>' +
+          '</div>';
+        }).join('') +
+        '</div></div>';
+    }
+    zukanHtml += '</div>';
+    panel.innerHTML = zukanHtml;
     return;
   }
-  panel.innerHTML = '<div class="tokusanhin-grid">' +
-    inventory.map(item =>
-      '<div class="tokusanhin-item">' +
-        '<div class="tokusanhin-emoji">' + item.emoji + '</div>' +
-        '<div class="tokusanhin-info">' +
-          '<div class="tokusanhin-name">' + item.name + '</div>' +
-          '<div class="tokusanhin-count">×' + item.count + '</div>' +
-        '</div>' +
-      '</div>'
-    ).join('') +
-  '</div>';
+
+  let html = toggleBtn;
+  if (inventory.length === 0) {
+    html += '<div class="tokusanhin-empty">特産品がありません<br>現地を訪問してゲットしよう！<br><span style="font-size:0.75rem;color:#666">卵を拾うと同時にもらえます（18時間ごと）</span></div>';
+  } else {
+    html += '<div class="tokusanhin-grid">' +
+      inventory.map(item =>
+        '<div class="tokusanhin-item">' +
+          '<div class="tokusanhin-emoji">' + item.emoji + '</div>' +
+          '<div class="tokusanhin-info">' +
+            '<div class="tokusanhin-name">' + item.name + '</div>' +
+            '<div class="tokusanhin-count">×' + item.count + '</div>' +
+          '</div>' +
+        '</div>'
+      ).join('') +
+    '</div>';
+  }
+  panel.innerHTML = html;
+}
+
+function toggleZukan() {
+  showingZukan = !showingZukan;
+  renderTokusanhinPanel();
 }
 
 function renderMap() {
