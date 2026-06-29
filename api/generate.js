@@ -43,9 +43,9 @@ module.exports = async function handler(req, res) {
 
     let stageNote = '';
     if (isChild) {
-      stageNote = 'This is the CHILD form. Make it look young, small, and cute. It should hint at what it will become as an adult but be clearly immature and less powerful.';
+      stageNote = 'This is the CHILD form. Make it look young, small, and cute. It should hint at what it will become as an adult but be clearly immature and less powerful. Write the lore in Japanese describing it as a young, small, weak creature that is still growing.';
     } else if (childMonster) {
-      stageNote = 'This is the ADULT form. It is the evolved version of this child monster: name="' + childMonster.name + '", concept="' + childMonster.concept + '", types=' + JSON.stringify(childMonster.types) + '. The adult must look like a clear evolution of the child - same color scheme, same general theme, but larger, more powerful, and more detailed. Keep the same name, concept, lore, and types as the child.';
+      stageNote = 'This is the ADULT form. It is the evolved version of this child monster: name="' + childMonster.name + '", concept="' + childMonster.concept + '", types=' + JSON.stringify(childMonster.types) + '. The adult must look like a clear evolution of the child - same color scheme, same general theme, but larger, more powerful, and more detailed. Keep the same name, concept, and types as the child. Write a NEW lore in Japanese that describes this creature as a fully grown powerful guardian - do NOT copy the child lore. The child lore was: "' + childMonster.lore + '". Write something more legendary and powerful befitting an adult form.';
     } else {
       stageNote = 'This is the ADULT form. Make it look mature, powerful, and fully evolved.';
     }
@@ -81,7 +81,6 @@ module.exports = async function handler(req, res) {
     if (!isChild && childMonster) {
       monster.name = childMonster.name;
       monster.concept = childMonster.concept;
-      monster.lore = childMonster.lore;
       monster.types = childMonster.types;
       monster.emoji = childMonster.emoji;
     }
