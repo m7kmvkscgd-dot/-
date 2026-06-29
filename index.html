@@ -76,11 +76,7 @@
     letter-spacing: 0.05em;
   }
 
-  .tab-bar {
-    display: flex;
-    gap: 8px;
-    width: 100%;
-  }
+  .tab-bar { display: flex; gap: 8px; width: 100%; }
 
   .tab-btn {
     flex: 1;
@@ -113,11 +109,7 @@
     gap: 12px;
   }
 
-  .input-row {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
+  .input-row { display: flex; flex-direction: column; gap: 10px; }
 
   input[type="text"] {
     flex: 1;
@@ -241,15 +233,12 @@
   }
 
   .monster-emoji-large {
-    font-size: 4rem;
+    font-size: 3.5rem;
     line-height: 1;
     filter: drop-shadow(0 0 12px rgba(245,214,122,0.4));
   }
 
-  .monster-meta {
-    flex: 1;
-    min-width: 0;
-  }
+  .monster-meta { flex: 1; min-width: 0; }
 
   .monster-meta h2 {
     font-family: 'Hachi Maru Pop', serif;
@@ -272,12 +261,7 @@
     border: 1px solid;
   }
 
-  .capture-info {
-    margin-top: 8px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-  }
+  .capture-info { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px; }
 
   .capture-badge {
     background: rgba(255,255,255,0.08);
@@ -348,11 +332,7 @@
   .zukan-panel { width: 100%; display: none; }
   .zukan-panel.visible { display: block; }
 
-  .zukan-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-  }
+  .zukan-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
 
   .zukan-card {
     background: rgba(10,10,20,0.85);
@@ -439,7 +419,7 @@
       <div class="card" id="resultCard">
         <div id="savedBadge" style="display:none"><span class="saved-badge">✓ 図鑑に保存済み</span></div>
         <div class="card-header">
-          <div class="monster-icon-wrap" id="monIconWrap">
+          <div class="monster-icon-wrap">
             <img class="monster-icon-img" id="monIconImg" src="" alt="" />
             <span class="monster-emoji-large" id="monEmoji"></span>
           </div>
@@ -512,17 +492,6 @@ const WEATHER_CODES = {
   95: 'thunder', 96: 'thunder', 99: 'thunder',
 };
 
-// 市名→画像ファイル名のマッピング
-const CITY_IMAGES = {
-  '大阪市': '/osaka.png',
-  '尼崎市': '/amagasaki.png',
-  '和歌山市': '/wakayama.png',
-};
-
-function getCityImage(city) {
-  return CITY_IMAGES[city] || null;
-}
-
 let history = [];
 let lastPromptJa = '';
 let lastPromptEn = '';
@@ -531,14 +500,12 @@ let capturedTemp = '';
 let currentTab = 'generate';
 
 function saveMonster(city, monster) {
-  const key = 'monster_' + city;
-  localStorage.setItem(key, JSON.stringify(monster));
+  localStorage.setItem('monster_' + city, JSON.stringify(monster));
   updateZukanCount();
 }
 
 function loadMonster(city) {
-  const key = 'monster_' + city;
-  const data = localStorage.getItem(key);
+  const data = localStorage.getItem('monster_' + city);
   return data ? JSON.parse(data) : null;
 }
 
@@ -547,10 +514,7 @@ function getAllMonsters() {
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i);
     if (key.startsWith('monster_')) {
-      try {
-        const m = JSON.parse(localStorage.getItem(key));
-        monsters.push(m);
-      } catch(e) {}
+      try { monsters.push(JSON.parse(localStorage.getItem(key))); } catch(e) {}
     }
   }
   return monsters;
@@ -580,7 +544,7 @@ function renderZukan() {
   }
   grid.innerHTML = '<div class="zukan-grid">' + monsters.map(m => {
     const wLabel = m.capturedWeather ? (WEATHER_LABELS[m.capturedWeather] || m.capturedWeather) : '';
-    const imgSrc = getCityImage(m.city);
+    const imgSrc = m.imageUrl || null;
     const iconHtml = imgSrc
       ? '<img class="zukan-icon" src="' + imgSrc + '" alt="' + m.name + '" style="display:block" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'block\'" /><span class="zukan-emoji" style="display:none">' + (m.emoji || '👾') + '</span>'
       : '<span class="zukan-emoji">' + (m.emoji || '👾') + '</span>';
@@ -624,7 +588,7 @@ async function generate(cityOverride) {
   document.getElementById('resultCard').classList.remove('visible');
   document.getElementById('errorState').classList.remove('visible');
 
-  const steps = ['市の歴史・文化を調査中...', '特産品・地形を分析中...', 'モンスターを設計中...', 'プロンプトを生成中...'];
+  const steps = ['市の歴史・文化を調査中...', '特産品・地形を分析中...', 'モンスターを設計中...', 'イラストを生成中...'];
   let stepIdx = 0;
   const stepInterval = setInterval(() => {
     stepIdx = (stepIdx + 1) % steps.length;
@@ -660,7 +624,6 @@ async function generate(cityOverride) {
 
     const data = await response.json();
     clearInterval(stepInterval);
-
     if (data.error) throw new Error(data.error);
 
     data.capturedWeather = capturedWeatherType;
@@ -691,10 +654,9 @@ function renderMonster(m) {
   document.getElementById('monConcept').textContent = m.concept;
   document.getElementById('monLore').textContent = m.lore;
 
-  // アイコン画像またはえもじを表示
-  const imgSrc = getCityImage(m.city);
   const imgEl = document.getElementById('monIconImg');
   const emojiEl = document.getElementById('monEmoji');
+  const imgSrc = m.imageUrl || null;
 
   if (imgSrc) {
     imgEl.src = imgSrc;
