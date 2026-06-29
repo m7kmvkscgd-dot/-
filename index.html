@@ -393,7 +393,7 @@
     border-radius: 8px;
     color: #aaa;
     font-family: 'Noto Sans JP', sans-serif;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     cursor: pointer;
     transition: all 0.15s;
   }
@@ -508,7 +508,7 @@
   .egg-result.visible { display: block; }
   .egg-result .egg-icon { font-size: 4rem; margin-bottom: 12px; }
   .egg-result h3 { font-family: 'Hachi Maru Pop', serif; color: #f5d67a; margin-bottom: 8px; }
-  .egg-result p { font-size: 0.85rem; color: #ccc; line-height: 1.7; }
+  .egg-result p { font-size: 0.85rem; color: #ccc; line-height: 1.7; white-space: pre-line; }
 
   .map-panel { display: none; }
   .map-panel.visible { display: block; }
@@ -707,6 +707,85 @@
   }
 
   .levelup-sub { font-size: 1rem; color: #fff; text-shadow: 1px 1px 4px #000; }
+
+  /* 特産品 */
+  .tokusanhin-grid { display: flex; flex-direction: column; gap: 12px; }
+  .tokusanhin-item {
+    background: rgba(10,10,20,0.85);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 12px;
+    padding: 14px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .tokusanhin-emoji { font-size: 2.5rem; width: 56px; text-align: center; flex-shrink: 0; }
+  .tokusanhin-info { flex: 1; }
+  .tokusanhin-name { font-family: 'Hachi Maru Pop', serif; font-size: 0.95rem; color: #f5d67a; }
+  .tokusanhin-count { font-size: 0.75rem; color: #aaa; margin-top: 4px; }
+  .tokusanhin-empty { text-align: center; color: #888; font-size: 0.85rem; padding: 40px 20px; }
+
+  .affection-section {
+    background: rgba(255,105,180,0.08);
+    border: 1px solid rgba(255,105,180,0.25);
+    border-radius: 12px;
+    padding: 14px;
+    margin-top: 16px;
+  }
+  .affection-label { font-size: 0.65rem; letter-spacing: 0.2em; color: #ff9ec8; margin-bottom: 8px; }
+  .affection-bar-wrap { background: rgba(255,255,255,0.1); border-radius: 999px; height: 8px; overflow: hidden; margin-bottom: 6px; }
+  .affection-bar { height: 100%; background: linear-gradient(90deg, #ff6b9d, #f5d67a); border-radius: 999px; transition: width 0.5s ease; }
+  .affection-text { font-size: 0.7rem; color: #ff9ec8; margin-bottom: 10px; }
+
+  .feed-label { font-size: 0.65rem; letter-spacing: 0.15em; color: #888; margin-bottom: 6px; }
+  .feed-grid { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+  .feed-item-btn {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 8px;
+    padding: 6px 10px;
+    color: #f0ebe0;
+    font-size: 0.78rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-family: 'Noto Sans JP', sans-serif;
+  }
+  .feed-item-btn:hover { border-color: #ff9ec8; }
+  .feed-cooldown { font-size: 0.72rem; color: #888; margin-bottom: 10px; }
+
+  .stat-bonus-section { margin-top: 10px; }
+  .stat-bonus-label { font-size: 0.65rem; letter-spacing: 0.15em; color: #888; margin-bottom: 6px; }
+  .stat-bonus-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .stat-bonus-item {
+    background: rgba(255,255,255,0.05);
+    border-radius: 8px;
+    padding: 8px 4px;
+    text-align: center;
+  }
+  .stat-bonus-item .slabel { font-size: 0.6rem; color: #888; }
+  .stat-bonus-item .svalue { font-size: 1rem; font-weight: 700; color: #f5d67a; }
+  .stat-bonus-item .sbonus { font-size: 0.65rem; color: #ff9ec8; }
+  .stat-bonus-btns { display: flex; gap: 4px; margin-top: 4px; }
+  .stat-bonus-btn {
+    flex: 1;
+    padding: 3px 0;
+    background: rgba(245,214,122,0.1);
+    border: 1px solid rgba(245,214,122,0.3);
+    border-radius: 4px;
+    color: #f5d67a;
+    font-size: 0.6rem;
+    cursor: pointer;
+    font-family: 'Noto Sans JP', sans-serif;
+  }
+  .stat-bonus-btn:disabled { opacity: 0.25; cursor: not-allowed; }
+  .stat-bonus-btn.minus {
+    background: rgba(192,57,43,0.1);
+    border-color: rgba(192,57,43,0.3);
+    color: #ff9999;
+  }
+  .stat-points-info { font-size: 0.72rem; color: #aaa; margin-top: 8px; text-align: center; }
 </style>
 </head>
 <body>
@@ -819,6 +898,7 @@
           <div class="section-label">由来・伝承</div>
           <div class="lore-text" id="monLore"></div>
         </div>
+        <div id="monAffectionSection"></div>
       </div>
     </div>
 
@@ -826,11 +906,13 @@
       <div class="trainer-card" id="trainerCard"></div>
       <div class="farm-sub-tabs">
         <button class="farm-sub-btn active" onclick="switchFarmTab('monsters')">🐾 モンスター</button>
+        <button class="farm-sub-btn" onclick="switchFarmTab('tokusanhin')">🎁 特産品</button>
         <button class="farm-sub-btn" onclick="switchFarmTab('map')">🗾 制覇マップ</button>
       </div>
       <div id="monstersPanel">
         <div class="farm-grid" id="farmGrid"></div>
       </div>
+      <div id="tokusanhinPanel" style="display:none"></div>
       <div class="map-panel" id="mapPanel"></div>
     </div>
 
@@ -987,6 +1069,331 @@ const CITY_TO_PREF = {
   '横浜市内': '神奈川県',
 };
 
+const TOKUSANHIN = {
+  '北海道': [
+    { id: 'hokkaido_1', name: 'じゃがバター', emoji: '🥔' },
+    { id: 'hokkaido_2', name: 'とうもろこし', emoji: '🌽' },
+    { id: 'hokkaido_3', name: 'ジンギスカン', emoji: '🍖' },
+    { id: 'hokkaido_4', name: 'いくら丼', emoji: '🐟' },
+    { id: 'hokkaido_5', name: 'チーズ', emoji: '🧀' },
+  ],
+  '青森県': [
+    { id: 'aomori_1', name: 'りんご', emoji: '🍎' },
+    { id: 'aomori_2', name: 'ホタテ', emoji: '🦪' },
+    { id: 'aomori_3', name: 'いちご煮', emoji: '🍲' },
+    { id: 'aomori_4', name: 'せんべい汁', emoji: '🍜' },
+    { id: 'aomori_5', name: 'にんにく', emoji: '🧄' },
+  ],
+  '岩手県': [
+    { id: 'iwate_1', name: 'わんこそば', emoji: '🍜' },
+    { id: 'iwate_2', name: 'まめぶ汁', emoji: '🍲' },
+    { id: 'iwate_3', name: 'ひっつみ', emoji: '🥟' },
+    { id: 'iwate_4', name: '前沢牛', emoji: '🥩' },
+    { id: 'iwate_5', name: 'どんこ汁', emoji: '🍲' },
+  ],
+  '宮城県': [
+    { id: 'miyagi_1', name: 'ずんだもち', emoji: '🍡' },
+    { id: 'miyagi_2', name: '牛タン', emoji: '🥩' },
+    { id: 'miyagi_3', name: '笹かまぼこ', emoji: '🐟' },
+    { id: 'miyagi_4', name: 'はらこ飯', emoji: '🍱' },
+    { id: 'miyagi_5', name: 'ほや', emoji: '🌊' },
+  ],
+  '秋田県': [
+    { id: 'akita_1', name: 'きりたんぽ', emoji: '🍢' },
+    { id: 'akita_2', name: 'いぶりがっこ', emoji: '🥒' },
+    { id: 'akita_3', name: '比内地鶏', emoji: '🐓' },
+    { id: 'akita_4', name: 'じゅんさい', emoji: '🌿' },
+    { id: 'akita_5', name: 'バター餅', emoji: '🍡' },
+  ],
+  '山形県': [
+    { id: 'yamagata_1', name: 'さくらんぼ', emoji: '🍒' },
+    { id: 'yamagata_2', name: '芋煮', emoji: '🍲' },
+    { id: 'yamagata_3', name: '冷やしラーメン', emoji: '🍜' },
+    { id: 'yamagata_4', name: '玉こんにゃく', emoji: '🍢' },
+    { id: 'yamagata_5', name: 'だし', emoji: '🥗' },
+  ],
+  '福島県': [
+    { id: 'fukushima_1', name: '喜多方ラーメン', emoji: '🍜' },
+    { id: 'fukushima_2', name: '桃', emoji: '🍑' },
+    { id: 'fukushima_3', name: 'ソースかつ丼', emoji: '🍛' },
+    { id: 'fukushima_4', name: '円盤餃子', emoji: '🥟' },
+    { id: 'fukushima_5', name: '会津そば', emoji: '🍜' },
+  ],
+  '茨城県': [
+    { id: 'ibaraki_1', name: '納豆', emoji: '🫘' },
+    { id: 'ibaraki_2', name: 'あんこう鍋', emoji: '🍲' },
+    { id: 'ibaraki_3', name: 'メロン', emoji: '🍈' },
+    { id: 'ibaraki_4', name: 'れんこん', emoji: '🌸' },
+    { id: 'ibaraki_5', name: 'スタミナラーメン', emoji: '🍜' },
+  ],
+  '栃木県': [
+    { id: 'tochigi_1', name: 'いちご', emoji: '🍓' },
+    { id: 'tochigi_2', name: '餃子', emoji: '🥟' },
+    { id: 'tochigi_3', name: 'レモン牛乳', emoji: '🥛' },
+    { id: 'tochigi_4', name: 'しもつかれ', emoji: '🍲' },
+    { id: 'tochigi_5', name: 'ゆばそば', emoji: '🍜' },
+  ],
+  '群馬県': [
+    { id: 'gunma_1', name: 'こんにゃく', emoji: '🍢' },
+    { id: 'gunma_2', name: 'ひもかわうどん', emoji: '🍜' },
+    { id: 'gunma_3', name: 'キャベツ', emoji: '🥬' },
+    { id: 'gunma_4', name: 'ソースかつ丼', emoji: '🍛' },
+    { id: 'gunma_5', name: 'おっきりこみ', emoji: '🍲' },
+  ],
+  '埼玉県': [
+    { id: 'saitama_1', name: 'フライ', emoji: '🍳' },
+    { id: 'saitama_2', name: 'ゼリーフライ', emoji: '🍘' },
+    { id: 'saitama_3', name: 'さといも', emoji: '🥔' },
+    { id: 'saitama_4', name: '冷汁うどん', emoji: '🍜' },
+    { id: 'saitama_5', name: 'いがまんじゅう', emoji: '🍡' },
+  ],
+  '東京都': [
+    { id: 'tokyo_1', name: 'もんじゃ焼き', emoji: '🥘' },
+    { id: 'tokyo_2', name: '人形焼き', emoji: '🍡' },
+    { id: 'tokyo_3', name: 'ちゃんこ鍋', emoji: '🍲' },
+    { id: 'tokyo_4', name: '深川めし', emoji: '🍱' },
+    { id: 'tokyo_5', name: 'どじょう鍋', emoji: '🍲' },
+  ],
+  '神奈川県': [
+    { id: 'kanagawa_1', name: 'シウマイ', emoji: '🥟' },
+    { id: 'kanagawa_2', name: 'サンマーメン', emoji: '🍜' },
+    { id: 'kanagawa_3', name: 'かまぼこ', emoji: '🐟' },
+    { id: 'kanagawa_4', name: '湘南しらす', emoji: '🐠' },
+    { id: 'kanagawa_5', name: 'えぼし焼き', emoji: '🍢' },
+  ],
+  '新潟県': [
+    { id: 'niigata_1', name: 'コシヒカリおにぎり', emoji: '🍙' },
+    { id: 'niigata_2', name: 'へぎそば', emoji: '🍜' },
+    { id: 'niigata_3', name: 'タレかつ丼', emoji: '🍛' },
+    { id: 'niigata_4', name: '笹だんご', emoji: '🍡' },
+    { id: 'niigata_5', name: '栃尾の油揚げ', emoji: '🟡' },
+  ],
+  '富山県': [
+    { id: 'toyama_1', name: 'ます寿司', emoji: '🍱' },
+    { id: 'toyama_2', name: 'ホタルイカ', emoji: '🦑' },
+    { id: 'toyama_3', name: '白えび', emoji: '🦐' },
+    { id: 'toyama_4', name: 'かまぼこ', emoji: '🐟' },
+    { id: 'toyama_5', name: 'ブラックラーメン', emoji: '🍜' },
+  ],
+  '石川県': [
+    { id: 'ishikawa_1', name: '治部煮', emoji: '🍲' },
+    { id: 'ishikawa_2', name: '金箔アイス', emoji: '🍦' },
+    { id: 'ishikawa_3', name: '能登牡蠣', emoji: '🦪' },
+    { id: 'ishikawa_4', name: '棒茶', emoji: '🍵' },
+    { id: 'ishikawa_5', name: '加賀野菜炊き合わせ', emoji: '🥦' },
+  ],
+  '福井県': [
+    { id: 'fukui_1', name: '越前がに', emoji: '🦀' },
+    { id: 'fukui_2', name: 'おろしそば', emoji: '🍜' },
+    { id: 'fukui_3', name: '羽二重餅', emoji: '🍡' },
+    { id: 'fukui_4', name: 'ソースかつ丼', emoji: '🍛' },
+    { id: 'fukui_5', name: '水ようかん', emoji: '🟫' },
+  ],
+  '山梨県': [
+    { id: 'yamanashi_1', name: 'ほうとう', emoji: '🍲' },
+    { id: 'yamanashi_2', name: 'もも', emoji: '🍑' },
+    { id: 'yamanashi_3', name: 'ぶどう', emoji: '🍇' },
+    { id: 'yamanashi_4', name: '吉田うどん', emoji: '🍜' },
+    { id: 'yamanashi_5', name: 'とりもつ煮', emoji: '🍲' },
+  ],
+  '長野県': [
+    { id: 'nagano_1', name: 'おやき', emoji: '🥟' },
+    { id: 'nagano_2', name: '信州そば', emoji: '🍜' },
+    { id: 'nagano_3', name: 'りんご', emoji: '🍎' },
+    { id: 'nagano_4', name: '野沢菜漬け', emoji: '🥬' },
+    { id: 'nagano_5', name: '山賊焼き', emoji: '🍗' },
+  ],
+  '岐阜県': [
+    { id: 'gifu_1', name: '鶏ちゃん', emoji: '🐓' },
+    { id: 'gifu_2', name: '飛騨牛', emoji: '🥩' },
+    { id: 'gifu_3', name: '栗きんとん', emoji: '🌰' },
+    { id: 'gifu_4', name: 'みたらし団子', emoji: '🍡' },
+    { id: 'gifu_5', name: '朴葉味噌焼き', emoji: '🍃' },
+  ],
+  '静岡県': [
+    { id: 'shizuoka_1', name: 'お茶', emoji: '🍵' },
+    { id: 'shizuoka_2', name: 'うなぎ', emoji: '🐍' },
+    { id: 'shizuoka_3', name: 'さくらえび', emoji: '🦐' },
+    { id: 'shizuoka_4', name: '富士宮やきそば', emoji: '🍜' },
+    { id: 'shizuoka_5', name: 'わさび漬け', emoji: '🌿' },
+  ],
+  '愛知県': [
+    { id: 'aichi_1', name: '味噌カツ', emoji: '🍖' },
+    { id: 'aichi_2', name: 'ひつまぶし', emoji: '🍱' },
+    { id: 'aichi_3', name: '手羽先', emoji: '🍗' },
+    { id: 'aichi_4', name: 'きしめん', emoji: '🍜' },
+    { id: 'aichi_5', name: '小倉トースト', emoji: '🍞' },
+  ],
+  '三重県': [
+    { id: 'mie_1', name: '伊勢えび', emoji: '🦞' },
+    { id: 'mie_2', name: '伊勢うどん', emoji: '🍜' },
+    { id: 'mie_3', name: 'てこね寿司', emoji: '🍱' },
+    { id: 'mie_4', name: '松阪牛', emoji: '🥩' },
+    { id: 'mie_5', name: 'さんま寿司', emoji: '🍣' },
+  ],
+  '滋賀県': [
+    { id: 'shiga_1', name: 'ふなずし', emoji: '🐟' },
+    { id: 'shiga_2', name: '近江牛', emoji: '🥩' },
+    { id: 'shiga_3', name: '丁字麩の辛子和え', emoji: '🟡' },
+    { id: 'shiga_4', name: '鴨鍋', emoji: '🍲' },
+    { id: 'shiga_5', name: 'もろこの佃煮', emoji: '🐟' },
+  ],
+  '京都府': [
+    { id: 'kyoto_1', name: '八つ橋', emoji: '🍡' },
+    { id: 'kyoto_2', name: '抹茶スイーツ', emoji: '🍵' },
+    { id: 'kyoto_3', name: '湯豆腐', emoji: '🍲' },
+    { id: 'kyoto_4', name: '西京漬け', emoji: '🐟' },
+    { id: 'kyoto_5', name: 'にしんそば', emoji: '🍜' },
+  ],
+  '大阪府': [
+    { id: 'osaka_1', name: 'たこ焼き', emoji: '🐙' },
+    { id: 'osaka_2', name: 'お好み焼き', emoji: '🥘' },
+    { id: 'osaka_3', name: '豚まん', emoji: '🥟' },
+    { id: 'osaka_4', name: 'かすうどん', emoji: '🍜' },
+    { id: 'osaka_5', name: 'みたらし団子', emoji: '🍡' },
+  ],
+  '兵庫県': [
+    { id: 'hyogo_1', name: '神戸牛', emoji: '🥩' },
+    { id: 'hyogo_2', name: 'あかし焼き', emoji: '🐙' },
+    { id: 'hyogo_3', name: '播州ラーメン', emoji: '🍜' },
+    { id: 'hyogo_4', name: 'いかなごのくぎ煮', emoji: '🐟' },
+    { id: 'hyogo_5', name: '淡路島たまねぎ', emoji: '🧅' },
+  ],
+  '奈良県': [
+    { id: 'nara_1', name: '柿の葉寿司', emoji: '🍣' },
+    { id: 'nara_2', name: '三輪そうめん', emoji: '🍜' },
+    { id: 'nara_3', name: 'みたらし団子', emoji: '🍡' },
+    { id: 'nara_4', name: '奈良漬け', emoji: '🥒' },
+    { id: 'nara_5', name: '大和茶', emoji: '🍵' },
+  ],
+  '和歌山県': [
+    { id: 'wakayama_1', name: '梅干し', emoji: '🫒' },
+    { id: 'wakayama_2', name: 'みかん', emoji: '🍊' },
+    { id: 'wakayama_3', name: '和歌山ラーメン', emoji: '🍜' },
+    { id: 'wakayama_4', name: 'めはり寿司', emoji: '🍱' },
+    { id: 'wakayama_5', name: 'じゃばらジュース', emoji: '🍋' },
+  ],
+  '鳥取県': [
+    { id: 'tottori_1', name: '松葉がに', emoji: '🦀' },
+    { id: 'tottori_2', name: '二十世紀梨', emoji: '🍐' },
+    { id: 'tottori_3', name: 'とうふちくわ', emoji: '🍢' },
+    { id: 'tottori_4', name: 'らっきょう漬け', emoji: '🧅' },
+    { id: 'tottori_5', name: 'あごちくわ', emoji: '🐟' },
+  ],
+  '島根県': [
+    { id: 'shimane_1', name: '出雲そば', emoji: '🍜' },
+    { id: 'shimane_2', name: 'のどぐろ塩焼き', emoji: '🐟' },
+    { id: 'shimane_3', name: '宍道湖しじみ汁', emoji: '🦪' },
+    { id: 'shimane_4', name: 'ぼてぼて茶', emoji: '🍵' },
+    { id: 'shimane_5', name: '出雲ぜんざい', emoji: '🍡' },
+  ],
+  '岡山県': [
+    { id: 'okayama_1', name: 'ままかり寿司', emoji: '🍣' },
+    { id: 'okayama_2', name: 'きびだんご', emoji: '🍡' },
+    { id: 'okayama_3', name: 'ひるぜん焼きそば', emoji: '🍜' },
+    { id: 'okayama_4', name: 'マスカット', emoji: '🍇' },
+    { id: 'okayama_5', name: 'デミカツ丼', emoji: '🍛' },
+  ],
+  '広島県': [
+    { id: 'hiroshima_1', name: 'お好み焼き', emoji: '🥘' },
+    { id: 'hiroshima_2', name: 'かき料理', emoji: '🦪' },
+    { id: 'hiroshima_3', name: 'もみじ饅頭', emoji: '🍁' },
+    { id: 'hiroshima_4', name: 'あなごめし', emoji: '🍱' },
+    { id: 'hiroshima_5', name: 'レモン鍋', emoji: '🍋' },
+  ],
+  '山口県': [
+    { id: 'yamaguchi_1', name: 'ふぐ刺し', emoji: '🐡' },
+    { id: 'yamaguchi_2', name: '瓦そば', emoji: '🍜' },
+    { id: 'yamaguchi_3', name: 'ういろう', emoji: '🍡' },
+    { id: 'yamaguchi_4', name: 'けんちょう', emoji: '🍲' },
+    { id: 'yamaguchi_5', name: '夏みかんジャム', emoji: '🍊' },
+  ],
+  '徳島県': [
+    { id: 'tokushima_1', name: '徳島ラーメン', emoji: '🍜' },
+    { id: 'tokushima_2', name: 'なると金時', emoji: '🍠' },
+    { id: 'tokushima_3', name: 'すだち', emoji: '🍋' },
+    { id: 'tokushima_4', name: 'ぼうぜの姿寿司', emoji: '🍣' },
+    { id: 'tokushima_5', name: '阿波尾鶏の焼き鳥', emoji: '🍗' },
+  ],
+  '香川県': [
+    { id: 'kagawa_1', name: 'うどん', emoji: '🍜' },
+    { id: 'kagawa_2', name: '骨付き鳥', emoji: '🍗' },
+    { id: 'kagawa_3', name: 'オリーブ牛', emoji: '🥩' },
+    { id: 'kagawa_4', name: 'しょうゆ豆', emoji: '🫘' },
+    { id: 'kagawa_5', name: '和三盆', emoji: '🍬' },
+  ],
+  '愛媛県': [
+    { id: 'ehime_1', name: 'みかん', emoji: '🍊' },
+    { id: 'ehime_2', name: 'じゃこ天', emoji: '🐟' },
+    { id: 'ehime_3', name: '鯛めし', emoji: '🍱' },
+    { id: 'ehime_4', name: '今治焼き鳥', emoji: '🍗' },
+    { id: 'ehime_5', name: 'タルト', emoji: '🍰' },
+  ],
+  '高知県': [
+    { id: 'kochi_1', name: 'かつおのたたき', emoji: '🐟' },
+    { id: 'kochi_2', name: '皿鉢料理', emoji: '🍱' },
+    { id: 'kochi_3', name: 'いも天', emoji: '🍠' },
+    { id: 'kochi_4', name: 'ゆずポン酢', emoji: '🍋' },
+    { id: 'kochi_5', name: 'くじらの竜田揚げ', emoji: '🐋' },
+  ],
+  '福岡県': [
+    { id: 'fukuoka_1', name: '博多ラーメン', emoji: '🍜' },
+    { id: 'fukuoka_2', name: '明太子', emoji: '🐟' },
+    { id: 'fukuoka_3', name: 'もつ鍋', emoji: '🍲' },
+    { id: 'fukuoka_4', name: '水炊き', emoji: '🍲' },
+    { id: 'fukuoka_5', name: 'ごまさば', emoji: '🐠' },
+  ],
+  '佐賀県': [
+    { id: 'saga_1', name: '呼子のいか', emoji: '🦑' },
+    { id: 'saga_2', name: '佐賀牛', emoji: '🥩' },
+    { id: 'saga_3', name: 'シシリアンライス', emoji: '🍛' },
+    { id: 'saga_4', name: 'むつごろう', emoji: '🐟' },
+    { id: 'saga_5', name: '有田の梨', emoji: '🍐' },
+  ],
+  '長崎県': [
+    { id: 'nagasaki_1', name: 'ちゃんぽん', emoji: '🍜' },
+    { id: 'nagasaki_2', name: '皿うどん', emoji: '🍜' },
+    { id: 'nagasaki_3', name: 'カステラ', emoji: '🍰' },
+    { id: 'nagasaki_4', name: 'トルコライス', emoji: '🍛' },
+    { id: 'nagasaki_5', name: 'かんころもち', emoji: '🍡' },
+  ],
+  '熊本県': [
+    { id: 'kumamoto_1', name: '馬刺し', emoji: '🥩' },
+    { id: 'kumamoto_2', name: 'からし蓮根', emoji: '🌸' },
+    { id: 'kumamoto_3', name: '太平燕', emoji: '🍜' },
+    { id: 'kumamoto_4', name: 'いきなり団子', emoji: '🍡' },
+    { id: 'kumamoto_5', name: 'あか牛丼', emoji: '🍛' },
+  ],
+  '大分県': [
+    { id: 'oita_1', name: 'とり天', emoji: '🍗' },
+    { id: 'oita_2', name: 'ふぐ刺し', emoji: '🐡' },
+    { id: 'oita_3', name: 'だんご汁', emoji: '🍲' },
+    { id: 'oita_4', name: 'りゅうきゅう', emoji: '🐟' },
+    { id: 'oita_5', name: 'やせうま', emoji: '🍡' },
+  ],
+  '宮崎県': [
+    { id: 'miyazaki_1', name: 'チキン南蛮', emoji: '🍗' },
+    { id: 'miyazaki_2', name: '冷や汁', emoji: '🍲' },
+    { id: 'miyazaki_3', name: '地鶏の炭火焼き', emoji: '🐓' },
+    { id: 'miyazaki_4', name: 'マンゴー', emoji: '🥭' },
+    { id: 'miyazaki_5', name: 'ピリ辛うどん', emoji: '🍜' },
+  ],
+  '鹿児島県': [
+    { id: 'kagoshima_1', name: '黒豚しゃぶしゃぶ', emoji: '🥩' },
+    { id: 'kagoshima_2', name: 'さつまあげ', emoji: '🍢' },
+    { id: 'kagoshima_3', name: '鶏刺し', emoji: '🐓' },
+    { id: 'kagoshima_4', name: 'あくまき', emoji: '🍡' },
+    { id: 'kagoshima_5', name: 'きびなご料理', emoji: '🐟' },
+  ],
+  '沖縄県': [
+    { id: 'okinawa_1', name: 'ゴーヤーチャンプルー', emoji: '🥬' },
+    { id: 'okinawa_2', name: 'ソーキそば', emoji: '🍜' },
+    { id: 'okinawa_3', name: 'タコライス', emoji: '🌮' },
+    { id: 'okinawa_4', name: 'サーターアンダギー', emoji: '🍩' },
+    { id: 'okinawa_5', name: 'ラフテー', emoji: '🥩' },
+  ],
+};
+
 const LEVEL_TABLE = [0, 1, 2, 4, 6, 9, 12, 16, 20, 25, 30, 36, 42, 49, 56, 64, 72, 81, 90, 100];
 
 function getTrainerLevel(adultCount) {
@@ -1128,6 +1535,98 @@ function getPartialPrefectures() {
   return prefSet;
 }
 
+// 特産品システム
+function getTokusanhinData() {
+  const data = localStorage.getItem('tokusanhinData');
+  return data ? JSON.parse(data) : { inventory: {}, lastPickup: {} };
+}
+
+function saveTokusanhinData(data) {
+  localStorage.setItem('tokusanhinData', JSON.stringify(data));
+}
+
+function getPrefForCity(city) {
+  if (CITY_TO_PREF[city]) return CITY_TO_PREF[city];
+  for (const p of PREFECTURES) {
+    const short = p.name.replace('県','').replace('府','').replace('都','').replace('道','');
+    if (city.includes(short)) return p.name;
+  }
+  return null;
+}
+
+function canPickupTokusanhin(city) {
+  const pref = getPrefForCity(city);
+  if (!pref || !TOKUSANHIN[pref]) return false;
+  const data = getTokusanhinData();
+  const lastPickup = data.lastPickup[city] || 0;
+  return Date.now() - lastPickup >= 18 * 60 * 60 * 1000;
+}
+
+function pickupTokusanhin(city) {
+  if (!canPickupTokusanhin(city)) return null;
+  const pref = getPrefForCity(city);
+  const items = TOKUSANHIN[pref];
+  const item = items[Math.floor(Math.random() * items.length)];
+  const data = getTokusanhinData();
+  data.inventory[item.id] = (data.inventory[item.id] || 0) + 1;
+  data.lastPickup[city] = Date.now();
+  saveTokusanhinData(data);
+  return item;
+}
+
+function getInventoryList() {
+  const data = getTokusanhinData();
+  const result = [];
+  for (const [id, count] of Object.entries(data.inventory)) {
+    if (count <= 0) continue;
+    for (const items of Object.values(TOKUSANHIN)) {
+      const item = items.find(i => i.id === id);
+      if (item) { result.push({ ...item, count }); break; }
+    }
+  }
+  return result;
+}
+
+function canFeedMonster(city) {
+  const data = getTokusanhinData();
+  const lastFed = data['lastFed_' + city] || 0;
+  return Date.now() - lastFed >= 4 * 60 * 60 * 1000;
+}
+
+function feedMonster(city, itemId) {
+  const data = getTokusanhinData();
+  if (!data.inventory[itemId] || data.inventory[itemId] <= 0) return false;
+  if (!canFeedMonster(city)) return false;
+  const affection = data['affection_' + city] || 0;
+  if (affection >= 20) return false;
+  data.inventory[itemId]--;
+  data['affection_' + city] = affection + 1;
+  data['lastFed_' + city] = Date.now();
+  saveTokusanhinData(data);
+  return true;
+}
+
+function getMonsterAffection(city) {
+  const data = getTokusanhinData();
+  return data['affection_' + city] || 0;
+}
+
+function getStatBonus(city) {
+  const data = getTokusanhinData();
+  return data['statBonus_' + city] || { hp: 0, atk: 0, def: 0, spd: 0 };
+}
+
+function saveStatBonus(city, bonus) {
+  const data = getTokusanhinData();
+  data['statBonus_' + city] = bonus;
+  saveTokusanhinData(data);
+}
+
+function getUsedStatPoints(city) {
+  const b = getStatBonus(city);
+  return b.hp + b.atk + b.def + b.spd;
+}
+
 function renderTrainerCard() {
   const name = getTrainerName() || 'トレーナー';
   const adultCount = countAdults();
@@ -1142,6 +1641,26 @@ function renderTrainerCard() {
       '<div class="exp-bar-wrap"><div class="exp-bar" style="width:' + percent + '%"></div></div>' +
       '<div class="exp-text">大人モンスター ' + progress + ' / ' + needed + ' 匹</div>' +
     '</div>';
+}
+
+function renderTokusanhinPanel() {
+  const inventory = getInventoryList();
+  const panel = document.getElementById('tokusanhinPanel');
+  if (inventory.length === 0) {
+    panel.innerHTML = '<div class="tokusanhin-empty">特産品がありません<br>現地を訪問してゲットしよう！<br><span style="font-size:0.75rem;color:#666">卵を拾うと同時にもらえます（18時間ごと）</span></div>';
+    return;
+  }
+  panel.innerHTML = '<div class="tokusanhin-grid">' +
+    inventory.map(item =>
+      '<div class="tokusanhin-item">' +
+        '<div class="tokusanhin-emoji">' + item.emoji + '</div>' +
+        '<div class="tokusanhin-info">' +
+          '<div class="tokusanhin-name">' + item.name + '</div>' +
+          '<div class="tokusanhin-count">×' + item.count + '</div>' +
+        '</div>' +
+      '</div>'
+    ).join('') +
+  '</div>';
 }
 
 function renderMap() {
@@ -1171,7 +1690,7 @@ function renderMap() {
       const isPartial = partial.has(p.name);
       const cls = isCleared ? 'pref-item cleared' : isPartial ? 'pref-item partial' : 'pref-item';
       const icon = isCleared ? '⭐' : isPartial ? '🥚' : '';
-      html += '<div class="' + cls + '"><div class="pref-name">' + p.name.replace('県', '').replace('府', '').replace('都', '').replace('道', '') + '</div>' +
+      html += '<div class="' + cls + '"><div class="pref-name">' + p.name.replace('県','').replace('府','').replace('都','').replace('道','') + '</div>' +
         '<div class="pref-count">' + icon + '</div></div>';
     });
     html += '</div></div>';
@@ -1198,6 +1717,7 @@ let farmTimerInterval = null;
 let hatchingCities = {};
 let currentMonsterData = null;
 let currentChildData = null;
+let currentMonsterCity = null;
 
 function showHatchLoading(isEgg) {
   const el = document.getElementById('hatchLoading');
@@ -1299,7 +1819,13 @@ async function pickupEgg() {
   if (!detectedCity) return;
   const farmCheck = getFarmData();
   if (farmCheck[detectedCity] && farmCheck[detectedCity].stage === 'adult') {
-    showEggResult('⭐ すでにモンスターがいます', detectedCity + 'のモンスターはすでに誕生しています。牧場で確認してください。');
+    // 大人モンスターがいる場合は特産品だけ取れるか試みる
+    const tokusanhin = pickupTokusanhin(detectedCity);
+    if (tokusanhin) {
+      showEggResult('🎁 特産品ゲット！', tokusanhin.emoji + ' ' + tokusanhin.name + 'を手に入れました！\nモンスターに贈って愛情を育てよう。');
+    } else {
+      showEggResult('⭐ すでにモンスターがいます', detectedCity + 'のモンスターはすでに誕生しています。牧場で確認してください。');
+    }
     return;
   }
   const userId = getUserId();
@@ -1321,9 +1847,13 @@ async function pickupEgg() {
       const farm = getFarmData();
       farm[detectedCity] = { stage: 'egg', egg: data.egg, weatherInfo: detectedWeather, temp: detectedTemp };
       saveFarmData(farm);
-      showEggResult('🥚 卵を拾いました！', detectedCity + 'の卵を手に入れました。\n孵化したら牧場で「孵化させる」ボタンを押してください！');
+      const tokusanhin = pickupTokusanhin(detectedCity);
+      const tokusanhinMsg = tokusanhin ? '\n🎁 特産品「' + tokusanhin.emoji + tokusanhin.name + '」もゲット！' : '';
+      showEggResult('🥚 卵を拾いました！', detectedCity + 'の卵を手に入れました。\n孵化したら牧場で「孵化させる」ボタンを押してください！' + tokusanhinMsg);
     } else if (data.status === 'already_have_egg') {
-      showEggResult('🥚 すでに卵があります', detectedCity + 'の卵はすでに持っています。牧場で確認してください。');
+      const tokusanhin = pickupTokusanhin(detectedCity);
+      const tokusanhinMsg = tokusanhin ? '\n🎁 特産品「' + tokusanhin.emoji + tokusanhin.name + '」をゲット！' : '';
+      showEggResult('🥚 すでに卵があります', detectedCity + 'の卵はすでに持っています。牧場で確認してください。' + tokusanhinMsg);
     } else if (data.status === 'already_generated') {
       renderMonster(data.monster, null);
     }
@@ -1412,10 +1942,13 @@ function switchFarmTab(tab) {
   currentFarmTab = tab;
   const btns = document.querySelectorAll('.farm-sub-btn');
   btns[0].classList.toggle('active', tab === 'monsters');
-  btns[1].classList.toggle('active', tab === 'map');
+  btns[1].classList.toggle('active', tab === 'tokusanhin');
+  btns[2].classList.toggle('active', tab === 'map');
   document.getElementById('monstersPanel').style.display = tab === 'monsters' ? 'block' : 'none';
+  document.getElementById('tokusanhinPanel').style.display = tab === 'tokusanhin' ? 'block' : 'none';
   document.getElementById('mapPanel').classList.toggle('visible', tab === 'map');
   if (tab === 'map') renderMap();
+  if (tab === 'tokusanhin') renderTokusanhinPanel();
 }
 
 function renderFarm() {
@@ -1461,6 +1994,8 @@ function renderFarm() {
         : '<div class="farm-icon">' + (m ? m.emoji || '👾' : '👾') + '</div>';
       statusText = '⭐ 大人';
       cardClass += ' adult';
+      const affection = getMonsterAffection(city);
+      if (affection > 0) statusText += ' 💗' + affection;
     }
     const m = entry.monster;
     const name = m ? m.name : city + 'の卵';
@@ -1490,6 +2025,7 @@ function showFarmMonster(city) {
 function renderMonster(m, childMonster) {
   currentMonsterData = m;
   currentChildData = childMonster || null;
+  currentMonsterCity = m.city;
 
   const tabs = document.getElementById('monsterFormTabs');
   const adultBtn = document.getElementById('adultTabBtn');
@@ -1535,14 +2071,24 @@ function renderMonsterContent(m) {
     const color = TYPE_COLORS[t] || '#ffffff';
     return '<span class="type-badge" style="border-color:' + color + ';color:' + color + '">' + t + 'タイプ</span>';
   }).join('');
+
   const stats = m.stats || {};
+  const bonus = m.stage === 'adult' ? getStatBonus(m.city) : { hp: 0, atk: 0, def: 0, spd: 0 };
   document.getElementById('monStats').innerHTML = [
-    { label: 'HP', value: stats.hp }, { label: 'ATK', value: stats.atk },
-    { label: 'DEF', value: stats.def }, { label: 'SPD', value: stats.spd },
-  ].map(s => '<div class="stat-item"><div class="stat-label">' + s.label + '</div><div class="stat-value">' + (s.value || '—') + '</div></div>').join('');
+    { label: 'HP', key: 'hp', value: stats.hp, bonusVal: bonus.hp * 2 },
+    { label: 'ATK', key: 'atk', value: stats.atk, bonusVal: bonus.atk },
+    { label: 'DEF', key: 'def', value: stats.def, bonusVal: bonus.def },
+    { label: 'SPD', key: 'spd', value: stats.spd, bonusVal: bonus.spd },
+  ].map(s => {
+    const total = (s.value || 0) + s.bonusVal;
+    const bonusText = s.bonusVal > 0 ? '<div style="font-size:0.6rem;color:#ff9ec8">+' + s.bonusVal + '</div>' : '';
+    return '<div class="stat-item"><div class="stat-label">' + s.label + '</div><div class="stat-value">' + total + '</div>' + bonusText + '</div>';
+  }).join('');
+
   const strongTags = (m.weatherStrong || []).map(w => '<span class="weather-tag strong">◎ ' + (WEATHER_LABELS[w] || w) + '</span>').join('');
   const weakTags = (m.weatherWeak || []).map(w => '<span class="weather-tag weak">✕ ' + (WEATHER_LABELS[w] || w) + '</span>').join('');
   document.getElementById('monWeather').innerHTML = strongTags + weakTags;
+
   if (m.moves && m.moves.length > 0) {
     document.getElementById('monMovesSection').style.display = 'block';
     document.getElementById('monMoves').innerHTML = m.moves.map(move => {
@@ -1556,7 +2102,103 @@ function renderMonsterContent(m) {
   } else {
     document.getElementById('monMovesSection').style.display = 'none';
   }
+
+  // 大人モンスターのみ愛情・特産品UIを表示
+  const affectionSection = document.getElementById('monAffectionSection');
+  if (m.stage === 'adult') {
+    const city = m.city;
+    const affection = getMonsterAffection(city);
+    const usedPoints = getUsedStatPoints(city);
+    const availablePoints = affection - usedPoints;
+    const canFeed = canFeedMonster(city);
+    const inventory = getInventoryList();
+
+    let feedHtml = '';
+    if (inventory.length > 0 && affection < 20) {
+      if (canFeed) {
+        feedHtml = '<div class="feed-label">🍱 特産品を贈る</div>' +
+          '<div class="feed-grid">' +
+          inventory.map(item =>
+            '<button class="feed-item-btn" onclick="onFeedMonster(\'' + city + '\',\'' + item.id + '\')">' +
+              item.emoji + ' ' + item.name + ' ×' + item.count +
+            '</button>'
+          ).join('') +
+          '</div>';
+      } else {
+        const data = getTokusanhinData();
+        const lastFed = data['lastFed_' + city] || 0;
+        const remaining = 4 * 60 * 60 * 1000 - (Date.now() - lastFed);
+        feedHtml = '<div class="feed-cooldown">🍱 次に食べられるまで ' + formatTimer(remaining) + '</div>';
+      }
+    } else if (affection >= 20) {
+      feedHtml = '<div class="feed-cooldown" style="color:#f5d67a">💛 愛情MAXです！</div>';
+    } else {
+      feedHtml = '<div class="feed-cooldown">特産品がありません。現地を訪問してゲットしよう！</div>';
+    }
+
+    let statBonusHtml = '';
+    if (affection > 0) {
+      statBonusHtml = '<div class="stat-bonus-section">' +
+        '<div class="stat-bonus-label">✨ ステータス振り分け（残り ' + availablePoints + ' pt）</div>' +
+        '<div class="stat-bonus-grid">' +
+        [
+          { label: 'HP', key: 'hp', mult: 2 },
+          { label: 'ATK', key: 'atk', mult: 1 },
+          { label: 'DEF', key: 'def', mult: 1 },
+          { label: 'SPD', key: 'spd', mult: 1 },
+        ].map(s => {
+          const b = getStatBonus(city);
+          const val = b[s.key] || 0;
+          const canAdd = availablePoints > 0;
+          const canRemove = val > 0;
+          return '<div class="stat-bonus-item">' +
+            '<div class="slabel">' + s.label + '</div>' +
+            '<div class="svalue">+' + (val * s.mult) + '</div>' +
+            '<div class="stat-bonus-btns">' +
+              '<button class="stat-bonus-btn minus" ' + (canRemove ? '' : 'disabled') + ' onclick="adjustStatBonus(\'' + city + '\',\'' + s.key + '\',-1)">－</button>' +
+              '<button class="stat-bonus-btn" ' + (canAdd ? '' : 'disabled') + ' onclick="adjustStatBonus(\'' + city + '\',\'' + s.key + '\',1)">＋</button>' +
+            '</div>' +
+          '</div>';
+        }).join('') +
+        '</div>' +
+        '<div class="stat-points-info">愛情ポイント ' + affection + '/20　使用済み ' + usedPoints + ' pt</div>' +
+      '</div>';
+    }
+
+    affectionSection.innerHTML =
+      '<div class="affection-section">' +
+        '<div class="affection-label">💗 愛情ポイント</div>' +
+        '<div class="affection-bar-wrap"><div class="affection-bar" style="width:' + (affection / 20 * 100) + '%"></div></div>' +
+        '<div class="affection-text">' + affection + ' / 20</div>' +
+        feedHtml +
+        statBonusHtml +
+      '</div>';
+  } else {
+    affectionSection.innerHTML = '';
+  }
+
   document.getElementById('resultCard').classList.add('visible');
+}
+
+function onFeedMonster(city, itemId) {
+  const success = feedMonster(city, itemId);
+  if (success) {
+    const affection = getMonsterAffection(city);
+    renderMonsterContent(currentMonsterData);
+    if (currentFarmTab === 'monsters') renderFarm();
+  }
+}
+
+function adjustStatBonus(city, key, delta) {
+  const bonus = getStatBonus(city);
+  const affection = getMonsterAffection(city);
+  const usedPoints = getUsedStatPoints(city);
+  const availablePoints = affection - usedPoints;
+  if (delta > 0 && availablePoints <= 0) return;
+  if (delta < 0 && (bonus[key] || 0) <= 0) return;
+  bonus[key] = (bonus[key] || 0) + delta;
+  saveStatBonus(city, bonus);
+  renderMonsterContent(currentMonsterData);
 }
 
 const trainerName = getTrainerName();
