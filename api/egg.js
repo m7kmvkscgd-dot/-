@@ -32,10 +32,6 @@ module.exports = async function handler(req, res) {
     return res.status(400).json({ error: 'userId and city are required' });
   }
   if (action === 'pickup') {
-    const existingMonster = await redisGet('monster:adult:' + city);
-    if (existingMonster) {
-      return res.status(200).json({ status: 'already_have_monster', monster: existingMonster });
-    }
     const existingEgg = await redisGet('egg:' + userId + ':' + city);
     if (existingEgg) {
       return res.status(200).json({ status: 'already_have_egg', egg: existingEgg });
