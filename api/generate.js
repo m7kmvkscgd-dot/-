@@ -121,7 +121,7 @@ module.exports = async function handler(req, res) {
     }
 
     const saveResult = await redisSet(cacheKey, monster);
-    monster.redisSaveResult = saveResult;
+
 
     return res.status(200).json(monster);
   } catch (e) {
