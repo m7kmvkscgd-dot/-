@@ -47,7 +47,7 @@ module.exports = async function handler(req, res) {
           prompt: imagePrompt,
           n: 1,
           size: '1024x1024',
-          quality: 'standard',
+          quality: 'medium',
         }),
       });
       const imageData = await imageRes.json();
@@ -63,13 +63,4 @@ module.exports = async function handler(req, res) {
         });
         monster.imageUrl = url;
       } else {
-        monster.imageError = 'No image data returned: ' + JSON.stringify(imageData).slice(0, 200);
-      }
-    } catch (imgError) {
-      monster.imageError = imgError.message;
-    }
-    return res.status(200).json(monster);
-  } catch (e) {
-    return res.status(500).json({ error: e.message });
-  }
-};
+        monster.imageError = 'No image data returned: ' +
