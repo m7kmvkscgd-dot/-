@@ -252,7 +252,7 @@ module.exports = async function handler(req, res) {
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
-        max_tokens: 1500,
+        max_tokens: 2000,
         messages: [{ role: 'user', content: content }],
       }),
     });
@@ -293,6 +293,9 @@ module.exports = async function handler(req, res) {
 
     try {
       const imagePrompt = (monster.promptEn || []).join(', ');
+      if (!imagePrompt) {
+        monster.imageError = 'Empty imagePrompt (promptEn was: ' + JSON.stringify(monster.promptEn) + ')';
+      } else {
       const imageRes = await fetch('https://api.openai.com/v1/images/generations', {
         method: 'POST',
         headers: {
@@ -308,7 +311,9 @@ module.exports = async function handler(req, res) {
         }),
       });
       const imageData = await imageRes.json();
-      if (imageData.data && imageData.data[0] && imageData.data[0].b64_json) {
+      if (imageData.error) {
+        monster.imageError = 'OpenAI API error: ' + JSON.stringify(imageData.error);
+      } else if (imageData.data && imageData.data[0] && imageData.data[0].b64_json) {
         const b64 = imageData.data[0].b64_json;
         let buffer = Buffer.from(b64, 'base64');
 
@@ -372,7 +377,8 @@ module.exports = async function handler(req, res) {
           contentType: 'image/png',
         });
         monster.imageUrl = url;
-      }
+      } // end imageData.data check
+      } // end imagePrompt check
     } catch (imgError) {
       monster.imageError = imgError.message;
     }
