@@ -2266,7 +2266,7 @@ function renderFarm() {
         : '<div class="farm-timer">孵化まで ' + formatTimer(remaining) + '</div>';
     } else if (entry.stage === 'child') {
       const m = entry.monster;
-      const imgSrc = m && (m.pixelImageUrl || m.imageUrl);
+      const imgSrc = m && m.imageUrl;
       iconHtml = imgSrc
         ? '<div class="farm-icon"><img src="' + imgSrc + '" alt="" /></div>'
         : '<div class="farm-icon">' + (m ? m.emoji || '👶' : '👶') + '</div>';
@@ -2279,7 +2279,7 @@ function renderFarm() {
         : '<div class="farm-timer">大人まで ' + formatTimer(remaining) + '</div>';
     } else {
       const m = entry.monster;
-      const imgSrc = m && (m.pixelImageUrl || m.imageUrl);
+      const imgSrc = m && m.imageUrl;
       iconHtml = imgSrc
         ? '<div class="farm-icon"><img src="' + imgSrc + '" alt="" /></div>'
         : '<div class="farm-icon">' + (m ? m.emoji || '👾' : '👾') + '</div>';
@@ -2540,12 +2540,7 @@ const TYPE_STRONG = {
 const ENEMY_POOL = [
   {
     name: 'カグツチン', emoji: '🔥', city: '溶岩島',
-    types: ['火'], imageUrl: null, pixelImageUrl: null,
-    promptEn: [
-      'fierce fire dragon with volcanic armor and blazing flame mane',
-      'bright red and orange body with glowing magma cracks on skin',
-      'aggressive creature with sharp claws, fangs, and erupting horn on head',
-    ],
+    types: ['火'], imageUrl: null,
     stats: { hp: 110, atk: 58, def: 36, spd: 44 },
     moves: [
       { name: '業火爪撃', type: '火', weight: 'heavy', power: 108, strong_against: ['木','氷'] },
@@ -2554,12 +2549,7 @@ const ENEMY_POOL = [
   },
   {
     name: 'タツミズ', emoji: '💧', city: '深海島',
-    types: ['水'], imageUrl: null, pixelImageUrl: null,
-    promptEn: [
-      'elegant sea serpent with flowing fins and deep ocean scales',
-      'deep blue and cyan body shimmering with bioluminescent patterns',
-      'graceful creature with long tail, webbed claws, and glowing aqua eyes',
-    ],
+    types: ['水'], imageUrl: null,
     stats: { hp: 108, atk: 48, def: 54, spd: 36 },
     moves: [
       { name: '大波砕甲',   type: '水', weight: 'heavy', power: 95, strong_against: ['火','土'] },
@@ -2568,12 +2558,7 @@ const ENEMY_POOL = [
   },
   {
     name: 'イカヅチ', emoji: '⚡', city: '雷雲島',
-    types: ['雷'], imageUrl: null, pixelImageUrl: null,
-    promptEn: [
-      'swift lightning beast with crackling electric fur and storm wings',
-      'bright yellow and gold body with electric sparks constantly discharging',
-      'fierce agile creature with pointed ears, lightning tail, and glowing thunderbolt markings',
-    ],
+    types: ['雷'], imageUrl: null,
     stats: { hp: 92, atk: 62, def: 30, spd: 55 },
     moves: [
       { name: '迅雷落断',   type: '雷', weight: 'heavy', power: 102, strong_against: ['水','雲'] },
@@ -2648,85 +2633,8 @@ function startBattle(city) {
 
   openBattleModal();
   renderBattle();
-
-  // NOTE: auto pixel sprite generation disabled to prevent unintended API costs
-  // To re-enable, uncomment the block below:
-  /*
-  const savedBattleState = battleState;
-  generatePixelSpriteIfNeeded(playerMonster, city, 'adult').then(url => {
-    if (url && battleState === savedBattleState) {
-      battleState.player.monster.pixelImageUrl = url;
-      renderBattle();
-    }
-  });
-  loadEnemyPixelSprite(savedBattleState.enemy.monster).then(url => {
-    if (url && battleState === savedBattleState) {
-      battleState.enemy.monster.pixelImageUrl = url;
-      renderBattle();
-    }
-  });
-  */
 }
 
-async function generatePixelSpriteIfNeeded(monster, city, stage) {
-  if (monster.pixelImageUrl) return monster.pixelImageUrl;
-  try {
-    const res = await fetch('/api/generate-pixel', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        monsterName: monster.name,
-        types: monster.types,
-        promptEn: monster.promptEn,
-        city: city,
-        stage: stage,
-      }),
-    });
-    if (!res.ok) return null;
-    const data = await res.json();
-    if (!data.pixelImageUrl) return null;
-    const f = getFarmData();
-    if (f[city] && f[city].monster) {
-      f[city].monster.pixelImageUrl = data.pixelImageUrl;
-      saveFarmData(f);
-    }
-    monster.pixelImageUrl = data.pixelImageUrl;
-    return data.pixelImageUrl;
-  } catch (e) {
-    return null;
-  }
-}
-
-async function loadEnemyPixelSprite(enemy) {
-  let cache = {};
-  try { cache = JSON.parse(localStorage.getItem('enemyPixelImages') || '{}'); } catch (e) {}
-  if (cache[enemy.name]) {
-    enemy.pixelImageUrl = cache[enemy.name];
-    return cache[enemy.name];
-  }
-  try {
-    const res = await fetch('/api/generate-pixel', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        monsterName: enemy.name,
-        types: enemy.types,
-        promptEn: enemy.promptEn,
-        city: enemy.city,
-        stage: 'adult',
-      }),
-    });
-    if (!res.ok) return null;
-    const data = await res.json();
-    if (!data.pixelImageUrl) return null;
-    cache[enemy.name] = data.pixelImageUrl;
-    localStorage.setItem('enemyPixelImages', JSON.stringify(cache));
-    enemy.pixelImageUrl = data.pixelImageUrl;
-    return data.pixelImageUrl;
-  } catch (e) {
-    return null;
-  }
-}
 
 function pickEnemyMove() {
   const moves = battleState.enemy.monster.moves || [];
@@ -2830,9 +2738,8 @@ function renderBattle() {
 
   // Enemy panel
   const eIconEl = document.getElementById('btlEnemyIcon');
-  const eImg = e.monster.pixelImageUrl || e.monster.imageUrl;
-  eIconEl.innerHTML = eImg
-    ? '<img class="battle-fighter-icon" src="' + eImg + '" alt="" />'
+  eIconEl.innerHTML = e.monster.imageUrl
+    ? '<img class="battle-fighter-icon" src="' + e.monster.imageUrl + '" alt="" />'
     : '<span class="battle-fighter-emoji">' + (e.monster.emoji || '👾') + '</span>';
   document.getElementById('btlEnemyName').textContent = e.monster.name;
   const eType = e.monster.types && e.monster.types[0];
@@ -2845,9 +2752,8 @@ function renderBattle() {
 
   // Player panel
   const pIconEl = document.getElementById('btlPlayerIcon');
-  const pImg = p.monster.pixelImageUrl || p.monster.imageUrl;
-  pIconEl.innerHTML = pImg
-    ? '<img class="battle-fighter-icon" src="' + pImg + '" alt="" />'
+  pIconEl.innerHTML = p.monster.imageUrl
+    ? '<img class="battle-fighter-icon" src="' + p.monster.imageUrl + '" alt="" />'
     : '<span class="battle-fighter-emoji">' + (p.monster.emoji || '👾') + '</span>';
   document.getElementById('btlPlayerName').textContent = p.monster.name;
   const pType = p.monster.types && p.monster.types[0];
