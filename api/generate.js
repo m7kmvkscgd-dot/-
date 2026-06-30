@@ -1,4 +1,5 @@
 const { put } = require('@vercel/blob');
+const sharp = require('sharp');
 
 async function redisGet(key) {
   const url = process.env.UPSTASH_REDIS_REST_URL + '/get/' + encodeURIComponent(key);
@@ -199,7 +200,48 @@ module.exports = async function handler(req, res) {
       const imageData = await imageRes.json();
       if (imageData.data && imageData.data[0] && imageData.data[0].b64_json) {
         const b64 = imageData.data[0].b64_json;
-        const buffer = Buffer.from(b64, 'base64');
+        let buffer = Buffer.from(b64, 'base64');
+
+        // Detect facing direction via Claude Haiku vision
+        let isLeftFacing = false;
+        try {
+          const visionRes = await fetch('https://api.anthropic.com/v1/messages', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-api-key': process.env.ANTHROPIC_API_KEY,
+              'anthropic-version': '2023-06-01',
+            },
+            body: JSON.stringify({
+              model: 'claude-haiku-4-5-20251001',
+              max_tokens: 10,
+              messages: [{
+                role: 'user',
+                content: [
+                  {
+                    type: 'image',
+                    source: { type: 'base64', media_type: 'image/png', data: b64 },
+                  },
+                  {
+                    type: 'text',
+                    text: 'Is the main character/creature in this image facing toward the LEFT side or the RIGHT side of the image? Reply with exactly one word: LEFT or RIGHT.',
+                  },
+                ],
+              }],
+            }),
+          });
+          const visionData = await visionRes.json();
+          const answer = (visionData.content && visionData.content[0] && visionData.content[0].text || '').trim().toUpperCase();
+          isLeftFacing = answer.startsWith('LEFT');
+        } catch (visionError) {
+          // Vision check failed — proceed without flipping
+        }
+
+        // Flip horizontally if left-facing
+        if (isLeftFacing) {
+          buffer = await sharp(buffer).flop().toBuffer();
+        }
+
         const fileName = 'monsters/' + city.replace(/[^\w]/g, '') + '_' + (stage || 'adult') + '.png';
         const { url } = await put(fileName, buffer, {
           access: 'public',
