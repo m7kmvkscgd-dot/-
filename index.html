@@ -621,6 +621,52 @@
 
   .modal-btn:hover { opacity: 0.85; }
 
+  .monster-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.88);
+    z-index: 200;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 20px 16px 40px;
+    overflow-y: auto;
+  }
+
+  .monster-modal-overlay.hidden { display: none; }
+
+  .monster-modal-box {
+    background: #0d1117;
+    border: 1px solid rgba(245,214,122,0.3);
+    border-radius: 20px;
+    padding: 20px 20px 28px;
+    width: 100%;
+    max-width: 500px;
+    position: relative;
+    margin: auto;
+  }
+
+  .monster-modal-close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: #aaa;
+    font-size: 1rem;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    transition: background 0.15s;
+  }
+
+  .monster-modal-close:hover { background: rgba(255,255,255,0.18); color: #fff; }
+
   .avatar-modal {
     position: fixed;
     inset: 0;
@@ -862,46 +908,6 @@
         <h3 id="eggResultTitle"></h3>
         <p id="eggResultText"></p>
       </div>
-
-      <div class="card" id="resultCard">
-        <div class="monster-form-tabs" id="monsterFormTabs" style="display:none">
-          <button class="monster-form-btn active" id="adultTabBtn" onclick="switchMonsterForm('adult')">⭐ 大人</button>
-          <button class="monster-form-btn" id="childTabBtn" onclick="switchMonsterForm('child')">👶 子供</button>
-        </div>
-        <div class="card-header">
-          <div class="monster-icon-wrap">
-            <img class="monster-icon-img" id="monIconImg" src="" alt="" />
-            <span class="monster-emoji-large" id="monEmoji"></span>
-          </div>
-          <div class="monster-meta">
-            <div class="city-name" id="monCity"></div>
-            <div id="monStageBadge"></div>
-            <h2 id="monName"></h2>
-            <div id="monTypes"></div>
-          </div>
-        </div>
-        <div class="section">
-          <div class="section-label">コンセプト</div>
-          <div class="section-content" id="monConcept"></div>
-        </div>
-        <div class="section">
-          <div class="section-label">ステータス</div>
-          <div class="stat-grid" id="monStats"></div>
-        </div>
-        <div class="section">
-          <div class="section-label">天気相性</div>
-          <div class="weather-affinity" id="monWeather"></div>
-        </div>
-        <div class="section" id="monMovesSection" style="display:none">
-          <div class="section-label">技</div>
-          <div class="moves-list" id="monMoves"></div>
-        </div>
-        <div class="section" style="margin-bottom:0">
-          <div class="section-label">由来・伝承</div>
-          <div class="lore-text" id="monLore"></div>
-        </div>
-        <div id="monAffectionSection"></div>
-      </div>
     </div>
 
     <div class="farm-panel" id="farmTab">
@@ -919,7 +925,52 @@
     </div>
 
   </div>
-</div><script>
+</div>
+
+<div class="monster-modal-overlay hidden" id="monsterModal" onclick="handleMonsterModalClick(event)">
+  <div class="monster-modal-box">
+    <button class="monster-modal-close" onclick="closeMonsterModal()">✕</button>
+    <div class="monster-form-tabs" id="monsterFormTabs" style="display:none">
+      <button class="monster-form-btn active" id="adultTabBtn" onclick="switchMonsterForm('adult')">⭐ 大人</button>
+      <button class="monster-form-btn" id="childTabBtn" onclick="switchMonsterForm('child')">👶 子供</button>
+    </div>
+    <div class="card-header">
+      <div class="monster-icon-wrap">
+        <img class="monster-icon-img" id="monIconImg" src="" alt="" />
+        <span class="monster-emoji-large" id="monEmoji"></span>
+      </div>
+      <div class="monster-meta">
+        <div class="city-name" id="monCity"></div>
+        <div id="monStageBadge"></div>
+        <h2 id="monName"></h2>
+        <div id="monTypes"></div>
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-label">コンセプト</div>
+      <div class="section-content" id="monConcept"></div>
+    </div>
+    <div class="section">
+      <div class="section-label">ステータス</div>
+      <div class="stat-grid" id="monStats"></div>
+    </div>
+    <div class="section">
+      <div class="section-label">天気相性</div>
+      <div class="weather-affinity" id="monWeather"></div>
+    </div>
+    <div class="section" id="monMovesSection" style="display:none">
+      <div class="section-label">技</div>
+      <div class="moves-list" id="monMoves"></div>
+    </div>
+    <div class="section" style="margin-bottom:0">
+      <div class="section-label">由来・伝承</div>
+      <div class="lore-text" id="monLore"></div>
+    </div>
+    <div id="monAffectionSection"></div>
+  </div>
+</div>
+
+<script>
 const TYPE_COLORS = {
   '火': '#ff6644', '水': '#4499ff', '雷': '#ffdd00', '氷': '#88eeff',
   '雲': '#aaccff', '土': '#cc9944', '木': '#44cc66', '鉄': '#aaaacc', '念': '#cc99ff',
@@ -1812,7 +1863,6 @@ async function pickupEgg() {
   document.getElementById('loadingState').classList.add('visible');
   document.getElementById('loadingText').textContent = '卵を探しています...';
   document.getElementById('eggResult').classList.remove('visible');
-  document.getElementById('resultCard').classList.remove('visible');
   document.getElementById('errorState').classList.remove('visible');
   try {
     const res = await fetch('/api/egg', {
@@ -1991,8 +2041,22 @@ function showFarmMonster(city) {
   const farm = getFarmData();
   const entry = farm[city];
   if (!entry || !entry.monster) return;
-  switchTab('generate');
   renderMonster(entry.monster, entry.childMonster || null);
+  openMonsterModal();
+}
+
+function openMonsterModal() {
+  document.getElementById('monsterModal').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeMonsterModal() {
+  document.getElementById('monsterModal').classList.add('hidden');
+  document.body.style.overflow = '';
+}
+
+function handleMonsterModalClick(event) {
+  if (event.target === event.currentTarget) closeMonsterModal();
 }
 
 function renderMonster(m, childMonster) {
@@ -2152,8 +2216,6 @@ function renderMonsterContent(m) {
   } else {
     affectionSection.innerHTML = '';
   }
-
-  document.getElementById('resultCard').classList.add('visible');
 }
 
 function onFeedMonster(city, itemId) {
