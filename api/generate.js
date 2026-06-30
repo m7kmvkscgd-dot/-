@@ -244,11 +244,23 @@ module.exports = async function handler(req, res) {
           visionDebug.error = visionError.message;
         }
 
-        // Flip horizontally if left-facing
+        // Flip horizontally if left-facing (pure-JS PNG flip via pngjs)
         if (isLeftFacing) {
           try {
-            const sharp = require('sharp');
-            buffer = await sharp(buffer).flop().toBuffer();
+            const { PNG } = require('pngjs');
+            const src = PNG.sync.read(buffer);
+            const dst = new PNG({ width: src.width, height: src.height });
+            for (let y = 0; y < src.height; y++) {
+              for (let x = 0; x < src.width; x++) {
+                const si = (y * src.width + x) * 4;
+                const di = (y * src.width + (src.width - 1 - x)) * 4;
+                dst.data[di]     = src.data[si];
+                dst.data[di + 1] = src.data[si + 1];
+                dst.data[di + 2] = src.data[si + 2];
+                dst.data[di + 3] = src.data[si + 3];
+              }
+            }
+            buffer = PNG.sync.write(dst);
             visionDebug.flipped = true;
           } catch (flipError) {
             visionDebug.flipError = flipError.message;
