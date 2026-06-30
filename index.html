@@ -2660,7 +2660,7 @@ function renderBattle() {
       document.getElementById('btlMoveBtns').innerHTML = moves.map((mv, i) => {
         const isHeavy = mv.weight === 'heavy';
         const col = TYPE_COLORS[mv.type] || '#aaa';
-        const borderWidth = isHeavy ? '3px' : '2px';
+        const borderWidth = isHeavy ? '5px' : '2px';
         return '<button class="battle-move-btn ' + (isHeavy ? 'heavy' : 'light') + '" style="border: ' + borderWidth + ' solid ' + col + ';" onclick="executeTurn(' + i + ')"' + (disabled ? ' disabled' : '') + '>' +
           '<div class="battle-move-btn-name">' + mv.name + '</div>' +
           '<div class="battle-move-btn-meta">' + (isHeavy ? '💥重' : '⚡軽') +
