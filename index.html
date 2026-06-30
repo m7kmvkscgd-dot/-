@@ -1834,7 +1834,7 @@ async function pickupEgg() {
       const tokusanhinMsg = tokusanhin ? '\n🎁 特産品「' + tokusanhin.emoji + tokusanhin.name + '」をゲット！' : '';
       showEggResult('🥚 すでに卵があります', detectedCity + 'の卵はすでに持っています。牧場で確認してください。' + tokusanhinMsg);
     } else if (data.status === 'already_generated') {
-      renderMonster(data.monster, null);
+      showEggResult('⭐ すでにモンスターがいます', detectedCity + 'のモンスターはすでに誕生しています。\n牧場タブから確認してください。');
     }
   } catch(e) {
     document.getElementById('loadingState').classList.remove('visible');
@@ -1898,13 +1898,7 @@ async function hatchNow(city) {
   }
   hideHatchLoading();
   renderFarm();
-  if (currentTab === 'generate') {
-    const f = getFarmData();
-    const entry2 = f[city];
-    if (entry2 && entry2.monster) {
-      renderMonster(entry2.monster, entry2.childMonster || null);
-    }
-  }
+  switchTab('farm');
 }
 
 function switchTab(tab) {
