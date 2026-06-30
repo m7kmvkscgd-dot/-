@@ -1,4 +1,111 @@
 const { put } = require('@vercel/blob');
+const zlib = require('zlib');
+
+// Flip a PNG buffer horizontally using only Node.js built-ins (no external deps).
+// Handles all 5 PNG filter types (None/Sub/Up/Average/Paeth).
+function flipPngHorizontal(inputBuf) {
+  const sig = [137,80,78,71,13,10,26,10];
+  for (let i = 0; i < 8; i++) {
+    if (inputBuf[i] !== sig[i]) throw new Error('Not a PNG');
+  }
+
+  // CRC32 (required for valid PNG chunks)
+  const crcTable = new Uint32Array(256);
+  for (let n = 0; n < 256; n++) {
+    let c = n;
+    for (let k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+    crcTable[n] = c;
+  }
+  function crc32(buf) {
+    let c = 0xFFFFFFFF;
+    for (let i = 0; i < buf.length; i++) c = crcTable[(c ^ buf[i]) & 0xFF] ^ (c >>> 8);
+    return (c ^ 0xFFFFFFFF) >>> 0;
+  }
+  function makeChunk(typeStr, data) {
+    const type = Buffer.from(typeStr, 'ascii');
+    const out = Buffer.alloc(12 + data.length);
+    out.writeUInt32BE(data.length, 0);
+    type.copy(out, 4);
+    data.copy(out, 8);
+    out.writeUInt32BE(crc32(Buffer.concat([type, data])), 8 + data.length);
+    return out;
+  }
+
+  // Parse PNG chunks
+  let pos = 8;
+  let width, height, bpp, ihdrData;
+  const idatBufs = [];
+  const metaChunks = [];
+
+  while (pos < inputBuf.length) {
+    const len = inputBuf.readUInt32BE(pos);
+    const type = inputBuf.slice(pos + 4, pos + 8).toString('ascii');
+    const data = inputBuf.slice(pos + 8, pos + 8 + len);
+    pos += 12 + len;
+
+    if (type === 'IHDR') {
+      width = data.readUInt32BE(0);
+      height = data.readUInt32BE(4);
+      const colorType = data[9];
+      const chanMap = { 0:1, 2:3, 3:1, 4:2, 6:4 };
+      bpp = chanMap[colorType] || 4;
+      ihdrData = data;
+    } else if (type === 'IDAT') {
+      idatBufs.push(data);
+    } else if (type !== 'IEND') {
+      metaChunks.push({ type, data });
+    }
+  }
+
+  // Decompress image data
+  const raw = zlib.inflateSync(Buffer.concat(idatBufs));
+  const rowStride = 1 + width * bpp; // 1 filter byte + pixel bytes
+
+  // Defilter all rows → raw RGBA pixels
+  const pixels = Buffer.alloc(height * width * bpp);
+  for (let y = 0; y < height; y++) {
+    const f = raw[y * rowStride];
+    const priorRow = y > 0 ? pixels.slice((y-1) * width * bpp, y * width * bpp) : Buffer.alloc(width * bpp);
+    const currRow  = pixels.slice(y * width * bpp, (y+1) * width * bpp);
+    for (let x = 0; x < width * bpp; x++) {
+      const byte = raw[y * rowStride + 1 + x];
+      const a = x >= bpp ? currRow[x - bpp] : 0;
+      const b = priorRow[x];
+      const c = x >= bpp ? priorRow[x - bpp] : 0;
+      let v;
+      if      (f === 0) { v = byte; }
+      else if (f === 1) { v = (byte + a) & 0xFF; }
+      else if (f === 2) { v = (byte + b) & 0xFF; }
+      else if (f === 3) { v = (byte + Math.floor((a + b) / 2)) & 0xFF; }
+      else {
+        const pa = Math.abs(b - c), pb = Math.abs(a - c), pc = Math.abs(a + b - 2*c);
+        v = (byte + (pa <= pb && pa <= pc ? a : pb <= pc ? b : c)) & 0xFF;
+      }
+      currRow[x] = v;
+    }
+  }
+
+  // Flip each row horizontally, output with filter type 0 (None)
+  const outRaw = Buffer.alloc(height * rowStride);
+  for (let y = 0; y < height; y++) {
+    outRaw[y * rowStride] = 0;
+    const srcRow = pixels.slice(y * width * bpp, (y+1) * width * bpp);
+    for (let x = 0; x < width; x++) {
+      const sp = x * bpp;
+      const dp = (width - 1 - x) * bpp;
+      srcRow.copy(outRaw, y * rowStride + 1 + dp, sp, sp + bpp);
+    }
+  }
+
+  const recompressed = zlib.deflateSync(outRaw, { level: 6 });
+  return Buffer.concat([
+    Buffer.from(sig),
+    makeChunk('IHDR', ihdrData),
+    ...metaChunks.map(c => makeChunk(c.type, c.data)),
+    makeChunk('IDAT', recompressed),
+    makeChunk('IEND', Buffer.alloc(0)),
+  ]);
+}
 
 async function redisGet(key) {
   const url = process.env.UPSTASH_REDIS_REST_URL + '/get/' + encodeURIComponent(key);
@@ -126,9 +233,9 @@ module.exports = async function handler(req, res) {
       stageNote = 'This is the ADULT form. Make it look mature and fully evolved. The monster must have EXACTLY 1 type (types array must have exactly one element). Write the lore in Japanese in 2-3 short sentences only.' + visualTableNote + buildNote + movesNote + moveTypeNote;
     }
 
-    const baseFormat = '{"name":"katakana monster name","emoji":"single emoji","city":"' + city + '","concept":"concept in Japanese","types":["type1"],"stats":{"hp":100,"atk":50,"def":40,"spd":35},"weatherStrong":["clear","rain"],"weatherWeak":["snow","thunder"],"promptEn":["feature1","feature2","feature3","512x512px square format, The character MUST be facing and oriented toward the RIGHT side of the image (not left). The character's body, head, and gaze should be turned to the right, as if walking or looking toward the right edge of the frame. This is a strict requirement - do NOT generate a left-facing or front-facing character. Full body visible, standing dynamic pose, soft gradient background NOT transparent, pokemon-style cute chibi character centered taking 70% of image, simple beautiful background with nature or environment elements matching the monster type, Japanese anime RPG game art","color palette and mood"],"lore":"lore in Japanese 2-3 sentences","moves":[{"name":"わざ名","type":"タイプ","weight":"light","power":65,"strong_against":["タイプ1"]}]}';
+    const baseFormat = '{"name":"katakana monster name","emoji":"single emoji","city":"' + city + '","concept":"concept in Japanese","types":["type1"],"stats":{"hp":100,"atk":50,"def":40,"spd":35},"weatherStrong":["clear","rain"],"weatherWeak":["snow","thunder"],"promptEn":["feature1","feature2","feature3","512x512px square format, The character MUST be facing and oriented toward the RIGHT side of the image (not left). The character body, head, and gaze must be turned to the right, as if walking or looking toward the right edge of the frame. This is a strict requirement - do NOT generate a left-facing or front-facing character. Full body visible, standing dynamic pose, soft gradient background NOT transparent, pokemon-style cute chibi character centered taking 70% of image, simple beautiful background with nature or environment elements matching the monster type, Japanese anime RPG game art","color palette and mood"],"lore":"lore in Japanese 2-3 sentences","moves":[{"name":"わざ名","type":"タイプ","weight":"light","power":65,"strong_against":["タイプ1"]}]}';
 
-    const adultFormat = '{"name":"katakana monster name","emoji":"single emoji","city":"' + city + '","concept":"concept in Japanese","types":["type1"],"stats":{"hp":100,"atk":50,"def":40,"spd":35},"weatherStrong":["clear","rain"],"weatherWeak":["snow","thunder"],"promptEn":["feature1","feature2","feature3","512x512px square format, The character MUST be facing and oriented toward the RIGHT side of the image (not left). The character's body, head, and gaze should be turned to the right, as if walking or looking toward the right edge of the frame. This is a strict requirement - do NOT generate a left-facing or front-facing character. Full body visible, standing dynamic pose, soft gradient background NOT transparent, pokemon-style cute chibi character centered taking 70% of image, simple beautiful background with nature or environment elements matching the monster type, Japanese anime RPG game art","color palette and mood"],"lore":"lore in Japanese 2-3 sentences","moves":[{"name":"技名","type":"タイプ","weight":"' + adultMoveWeights[0] + '","power":' + (adultMoveWeights[0] === 'heavy' ? 100 : 70) + ',"strong_against":["タイプ1"]},{"name":"技名","type":"タイプ","weight":"' + adultMoveWeights[1] + '","power":' + (adultMoveWeights[1] === 'heavy' ? 100 : 70) + ',"strong_against":["タイプ1"]}]}';
+    const adultFormat = '{"name":"katakana monster name","emoji":"single emoji","city":"' + city + '","concept":"concept in Japanese","types":["type1"],"stats":{"hp":100,"atk":50,"def":40,"spd":35},"weatherStrong":["clear","rain"],"weatherWeak":["snow","thunder"],"promptEn":["feature1","feature2","feature3","512x512px square format, The character MUST be facing and oriented toward the RIGHT side of the image (not left). The character body, head, and gaze must be turned to the right, as if walking or looking toward the right edge of the frame. This is a strict requirement - do NOT generate a left-facing or front-facing character. Full body visible, standing dynamic pose, soft gradient background NOT transparent, pokemon-style cute chibi character centered taking 70% of image, simple beautiful background with nature or environment elements matching the monster type, Japanese anime RPG game art","color palette and mood"],"lore":"lore in Japanese 2-3 sentences","moves":[{"name":"技名","type":"タイプ","weight":"' + adultMoveWeights[0] + '","power":' + (adultMoveWeights[0] === 'heavy' ? 100 : 70) + ',"strong_against":["タイプ1"]},{"name":"技名","type":"タイプ","weight":"' + adultMoveWeights[1] + '","power":' + (adultMoveWeights[1] === 'heavy' ? 100 : 70) + ',"strong_against":["タイプ1"]}]}';
 
     const content = 'You are a game designer. Design a local monster for the Japanese city of ' + city + '. Research its history, geography, local specialties, legends, and modern characteristics. Current weather at player location: ' + weather + '. ' + stageNote + ' Output ONLY a valid JSON object with no explanation, no markdown, no code blocks. The JSON must use double quotes only. Format: ' + (isChild ? baseFormat : adultFormat);
 
@@ -244,23 +351,10 @@ module.exports = async function handler(req, res) {
           visionDebug.error = visionError.message;
         }
 
-        // Flip horizontally if left-facing (pure-JS PNG flip via pngjs)
+        // Flip horizontally if left-facing (zero external deps — uses flipPngHorizontal above)
         if (isLeftFacing) {
           try {
-            const { PNG } = require('pngjs');
-            const src = PNG.sync.read(buffer);
-            const dst = new PNG({ width: src.width, height: src.height });
-            for (let y = 0; y < src.height; y++) {
-              for (let x = 0; x < src.width; x++) {
-                const si = (y * src.width + x) * 4;
-                const di = (y * src.width + (src.width - 1 - x)) * 4;
-                dst.data[di]     = src.data[si];
-                dst.data[di + 1] = src.data[si + 1];
-                dst.data[di + 2] = src.data[si + 2];
-                dst.data[di + 3] = src.data[si + 3];
-              }
-            }
-            buffer = PNG.sync.write(dst);
+            buffer = flipPngHorizontal(buffer);
             visionDebug.flipped = true;
           } catch (flipError) {
             visionDebug.flipError = flipError.message;
