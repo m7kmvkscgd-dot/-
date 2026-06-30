@@ -54,9 +54,9 @@ module.exports = async function handler(req, res) {
 
     // Body build: light 20% / medium 60% / heavy 20%
     const BUILD_DESC = {
-      heavy:  'heavy build: large and stocky — broad body, thick limbs, imposing physical presence',
-      medium: 'medium build: balanced proportions — standard body frame, moderate size',
-      light:  'light build: small and slender — lean frame, lithe limbs, compact size',
+      heavy:  'heavy build: large and stocky — broad body, thick limbs, imposing physical presence. Stats tendency: HP and DEF lean high, SPD leans low.',
+      medium: 'medium build: balanced proportions — standard body frame, moderate size. Stats tendency: no extreme bias, all stats balanced.',
+      light:  'light build: small and slender — lean frame, lithe limbs, compact size. Stats tendency: SPD leans high, HP and DEF lean low.',
     };
     function rollBuild() {
       const r = Math.random();
