@@ -2689,8 +2689,14 @@ function closeBattleModal() {
 }
 
 async function generateRandomMonster() {
-  const cities = Object.keys(CITY_TO_PREF);
-  const city = cities[Math.floor(Math.random() * cities.length)];
+  const farm = getFarmData();
+  const allCities = Object.keys(CITY_TO_PREF);
+  const available = allCities.filter(c => !farm[c]);
+  if (!available.length) {
+    alert('すべての都市にモンスターがいます！');
+    return;
+  }
+  const city = available[Math.floor(Math.random() * available.length)];
   const btn = document.getElementById('randomGenBtn');
   btn.disabled = true;
   btn.textContent = '⏳ 生成中... (' + city + ')';
@@ -2702,6 +2708,9 @@ async function generateRandomMonster() {
     });
     const monster = await res.json();
     if (monster.error) throw new Error(monster.error);
+    const f = getFarmData();
+    f[city] = { stage: 'adult', monster };
+    saveFarmData(f);
     renderMonster(monster, null);
     openMonsterModal();
   } catch (e) {
