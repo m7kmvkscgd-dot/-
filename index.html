@@ -2617,6 +2617,10 @@ function calcDamage(move, atkStats, defStats) {
 }
 
 function startBattle(city) {
+  // Reset end overlay in case of rematch
+  const prevOverlay = document.getElementById('btlEndOverlay');
+  if (prevOverlay) { prevOverlay.className = ''; prevOverlay.innerHTML = ''; }
+
   const farm = getFarmData();
   const entry = farm[city];
   if (!entry || !entry.monster || entry.stage !== 'adult') return;
