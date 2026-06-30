@@ -834,6 +834,100 @@
     color: #ff9999;
   }
   .stat-points-info { font-size: 0.72rem; color: #aaa; margin-top: 8px; text-align: center; }
+
+  /* ===== BATTLE MODAL ===== */
+  .battle-modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.93);
+    z-index: 300;
+    display: flex; align-items: flex-start; justify-content: center;
+    padding: 16px 16px 40px; overflow-y: auto;
+  }
+  .battle-modal-overlay.hidden { display: none; }
+  .battle-modal-box {
+    background: #0d1117;
+    border: 1px solid rgba(150,100,255,0.4);
+    border-radius: 20px; padding: 16px 16px 24px;
+    width: 100%; max-width: 500px;
+    position: relative; margin: auto;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .battle-modal-close {
+    position: absolute; top: 14px; right: 14px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: #aaa; font-size: 1rem;
+    width: 32px; height: 32px; border-radius: 50%;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s;
+  }
+  .battle-modal-close:hover { background: rgba(255,255,255,0.18); color: #fff; }
+  .battle-title { font-size: 1rem; font-weight: 700; color: #cc99ff; text-align: center; letter-spacing: 0.1em; padding-right: 28px; }
+  .battle-fighter {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px; padding: 10px 12px;
+  }
+  .battle-fighter-header { display: flex; align-items: center; gap: 10px; margin-bottom: 7px; }
+  .battle-fighter-icon { width: 44px; height: 44px; border-radius: 8px; object-fit: cover; }
+  .battle-fighter-emoji { font-size: 2.2rem; line-height: 1; }
+  .battle-fighter-meta { flex: 1; }
+  .battle-fighter-name { font-weight: 700; font-size: 0.95rem; color: #f0ebe0; }
+  .battle-fighter-sub { font-size: 0.7rem; color: #888; margin-top: 2px; }
+  .battle-hp-row { display: flex; align-items: center; gap: 8px; }
+  .battle-hp-label { font-size: 0.68rem; color: #888; min-width: 20px; }
+  .battle-hp-track { flex: 1; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; }
+  .battle-hp-fill { height: 100%; border-radius: 4px; transition: width 0.4s ease, background 0.4s; }
+  .battle-hp-text { font-size: 0.72rem; color: #aaa; min-width: 56px; text-align: right; }
+  .battle-vs { text-align: center; font-size: 0.82rem; color: #555; font-weight: 700; margin: -4px 0; }
+  .battle-move-area { display: flex; flex-direction: column; gap: 8px; }
+  .battle-move-label { font-size: 0.75rem; color: #aaa; }
+  .battle-move-btns { display: flex; gap: 8px; }
+  .battle-move-btn {
+    flex: 1; padding: 10px 8px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 10px; cursor: pointer;
+    text-align: center; transition: background 0.15s;
+    font-family: 'Noto Sans JP', sans-serif;
+  }
+  .battle-move-btn:hover:not(:disabled) { background: rgba(255,255,255,0.13); }
+  .battle-move-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+  .battle-move-btn.heavy { border: 1px solid rgba(255,136,102,0.45); }
+  .battle-move-btn.light { border: 1px solid rgba(255,221,85,0.4); }
+  .battle-move-btn-name { font-size: 0.88rem; font-weight: 700; color: #f0ebe0; }
+  .battle-move-btn-meta { font-size: 0.67rem; color: #aaa; margin-top: 3px; }
+  .battle-log-wrap {
+    background: rgba(0,0,0,0.35);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 10px; padding: 10px;
+    max-height: 200px; overflow-y: auto;
+    display: flex; flex-direction: column; gap: 3px;
+  }
+  .battle-log-entry { font-size: 0.72rem; line-height: 1.55; padding: 2px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+  .battle-log-entry:last-child { border-bottom: none; }
+  .btl-player { color: #7ad4ff; }
+  .btl-enemy  { color: #ff9977; }
+  .btl-system { color: #cc99ff; font-weight: 700; text-align: center; }
+  .btl-clean  { color: #ffd700; font-weight: 700; }
+  .btl-graze  { color: #777; font-style: italic; }
+  .battle-result-box {
+    text-align: center; padding: 14px 12px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);
+  }
+  .battle-result-win  { font-size: 1.4rem; font-weight: 900; color: #ffd700; }
+  .battle-result-lose { font-size: 1.4rem; font-weight: 900; color: #ff6666; }
+  .battle-result-draw { font-size: 1.4rem; font-weight: 900; color: #aaa; }
+  .battle-result-sub  { font-size: 0.8rem; color: #aaa; margin-top: 4px; }
+  .battle-btn-row { display: flex; gap: 8px; justify-content: center; margin-top: 12px; }
+  .battle-btn {
+    padding: 10px 20px; border-radius: 10px; cursor: pointer;
+    font-family: 'Noto Sans JP', sans-serif; font-size: 0.85rem; font-weight: 700;
+    background: rgba(204,153,255,0.12);
+    border: 1px solid rgba(204,153,255,0.4);
+    color: #cc99ff; transition: background 0.15s;
+  }
+  .battle-btn:hover { background: rgba(204,153,255,0.24); }
 </style>
 </head>
 <body>
@@ -967,6 +1061,53 @@
       <div class="lore-text" id="monLore"></div>
     </div>
     <div id="monAffectionSection"></div>
+  </div>
+</div>
+
+<div class="battle-modal-overlay hidden" id="battleModal">
+  <div class="battle-modal-box">
+    <button class="battle-modal-close" onclick="closeBattleModal()">✕</button>
+    <div class="battle-title">⚔️ バトル</div>
+    <!-- Enemy -->
+    <div class="battle-fighter">
+      <div class="battle-fighter-header">
+        <div id="btlEnemyIcon"></div>
+        <div class="battle-fighter-meta">
+          <div class="battle-fighter-name" id="btlEnemyName"></div>
+          <div class="battle-fighter-sub" id="btlEnemySub"></div>
+        </div>
+      </div>
+      <div class="battle-hp-row">
+        <div class="battle-hp-label">HP</div>
+        <div class="battle-hp-track"><div class="battle-hp-fill" id="btlEnemyHpFill"></div></div>
+        <div class="battle-hp-text" id="btlEnemyHpText"></div>
+      </div>
+    </div>
+    <div class="battle-vs">VS</div>
+    <!-- Player -->
+    <div class="battle-fighter">
+      <div class="battle-fighter-header">
+        <div id="btlPlayerIcon"></div>
+        <div class="battle-fighter-meta">
+          <div class="battle-fighter-name" id="btlPlayerName"></div>
+          <div class="battle-fighter-sub" id="btlPlayerSub"></div>
+        </div>
+      </div>
+      <div class="battle-hp-row">
+        <div class="battle-hp-label">HP</div>
+        <div class="battle-hp-track"><div class="battle-hp-fill" id="btlPlayerHpFill"></div></div>
+        <div class="battle-hp-text" id="btlPlayerHpText"></div>
+      </div>
+    </div>
+    <!-- Move selection -->
+    <div class="battle-move-area" id="btlMoveArea">
+      <div class="battle-move-label">技を選択してください</div>
+      <div class="battle-move-btns" id="btlMoveBtns"></div>
+    </div>
+    <!-- Battle log -->
+    <div class="battle-log-wrap" id="btlLog"></div>
+    <!-- Result -->
+    <div id="btlResultArea" style="display:none"></div>
   </div>
 </div>
 
@@ -2019,6 +2160,7 @@ function renderFarm() {
       cardClass += ' adult';
       const affection = getMonsterAffection(city);
       if (affection > 0) statusText += ' 💗' + affection;
+      timerHtml = '<button class="hatch-btn" onclick="event.stopPropagation();startBattle(\'' + city + '\')">⚔️ バトル！</button>';
     }
     const m = entry.monster;
     const name = m ? m.name : city + 'の卵';
@@ -2253,6 +2395,285 @@ document.getElementById('nameInput').addEventListener('keydown', e => {
 updateFarmCount();
 renderTrainerCard();
 detectLocation();
+
+// ===== BATTLE SYSTEM =====
+
+const TYPE_STRONG = {
+  '火': ['木','氷','鉄'],
+  '水': ['火','土'],
+  '木': ['水','土'],
+  '雷': ['水','雲'],
+  '雲': ['木','火'],
+  '土': ['雷','火'],
+  '氷': ['木','雲'],
+  '鉄': ['氷','念'],
+  '念': ['木','水'],
+};
+
+const ENEMY_POOL = [
+  {
+    name: 'カグツチン', emoji: '🔥', city: '溶岩島',
+    types: ['火'], imageUrl: null,
+    stats: { hp: 110, atk: 58, def: 36, spd: 44 },
+    moves: [
+      { name: '業火爪撃', type: '火', weight: 'heavy', power: 108, strong_against: ['木','氷'] },
+      { name: 'ほのかぜ',  type: '火', weight: 'light', power: 72,  strong_against: ['木'] },
+    ],
+  },
+  {
+    name: 'タツミズ', emoji: '💧', city: '深海島',
+    types: ['水'], imageUrl: null,
+    stats: { hp: 108, atk: 48, def: 54, spd: 36 },
+    moves: [
+      { name: '大波砕甲',   type: '水', weight: 'heavy', power: 95, strong_against: ['火','土'] },
+      { name: 'みずしぶき', type: '水', weight: 'light', power: 68, strong_against: ['火'] },
+    ],
+  },
+  {
+    name: 'イカヅチ', emoji: '⚡', city: '雷雲島',
+    types: ['雷'], imageUrl: null,
+    stats: { hp: 92, atk: 62, def: 30, spd: 55 },
+    moves: [
+      { name: '迅雷落断',   type: '雷', weight: 'heavy', power: 102, strong_against: ['水','雲'] },
+      { name: 'でんきっす', type: '雷', weight: 'light', power: 74,  strong_against: ['水'] },
+    ],
+  },
+];
+
+let battleState = null;
+
+function getEffectiveStats(monster) {
+  const base = monster.stats || { hp: 100, atk: 50, def: 40, spd: 35 };
+  const city = monster.city || '';
+  const bonus = city ? (getStatBonus(city) || { hp: 0, atk: 0, def: 0, spd: 0 }) : { hp: 0, atk: 0, def: 0, spd: 0 };
+  return {
+    hp:  Math.round(base.hp  + bonus.hp  * 2 * 0.75),
+    atk: Math.round(base.atk + bonus.atk * 1 * 0.75),
+    def: Math.round(base.def + bonus.def * 1 * 0.75),
+    spd: Math.round(base.spd + bonus.spd * 1 * 0.75),
+  };
+}
+
+function calcDamage(move, atkStats, defStats) {
+  const isHeavy = move.weight === 'heavy';
+  // Heavy move lowers attacker's effective SPD for variance calc
+  const effectiveAtkSpd = isHeavy ? atkStats.spd * 0.7 : atkStats.spd;
+  const spdDiff = defStats.spd - effectiveAtkSpd; // positive = defender is faster
+  const coeff = isHeavy ? 0.008 : 0.002;
+  const baseLow = isHeavy ? 0.80 : 0.90;
+  const hiCap  = isHeavy ? 1.20 : 1.10;
+  // Defender being faster lowers attacker's variance floor; attacker being faster raises it
+  const finalLow = Math.max(0.40, Math.min(baseLow, baseLow - spdDiff * coeff));
+  const variance = finalLow + Math.random() * (hiCap - finalLow);
+  const typeMultiplier = (TYPE_STRONG[move.type] || []).includes(defStats.monsterType) ? 1.5 : 1.0;
+  // 0.12 scaling constant → ~15 damage/turn at base stats → 6-8 turn battles
+  const rawDamage = move.power * (atkStats.atk / defStats.def) * 0.12 * variance * typeMultiplier;
+  const damage = Math.max(1, Math.round(rawDamage));
+  const isGraze = variance <= 0.70;
+  const isClean = isHeavy && variance >= 1.10;
+  return { damage, variance, typeMultiplier, isGraze, isClean };
+}
+
+function startBattle(city) {
+  const farm = getFarmData();
+  const entry = farm[city];
+  if (!entry || !entry.monster || entry.stage !== 'adult') return;
+
+  const playerMonster = entry.monster;
+  const ps = getEffectiveStats(playerMonster);
+  const enemy = ENEMY_POOL[Math.floor(Math.random() * ENEMY_POOL.length)];
+  const es = getEffectiveStats(enemy);
+
+  battleState = {
+    player: {
+      monster: playerMonster,
+      stats: { ...ps, monsterType: playerMonster.types && playerMonster.types[0] },
+      maxHp: ps.hp, currentHp: ps.hp,
+    },
+    enemy: {
+      monster: enemy,
+      stats: { ...es, monsterType: enemy.types && enemy.types[0] },
+      maxHp: es.hp, currentHp: es.hp,
+    },
+    turn: 1, log: [], phase: 'select', result: null,
+  };
+
+  openBattleModal();
+  renderBattle();
+}
+
+function pickEnemyMove() {
+  const moves = battleState.enemy.monster.moves || [];
+  if (!moves.length) return { name: 'たいあたり', type: battleState.enemy.stats.monsterType || '念', weight: 'light', power: 60, strong_against: [] };
+  return moves[Math.floor(Math.random() * moves.length)];
+}
+
+function executeTurn(playerMoveIdx) {
+  if (!battleState || battleState.phase !== 'select') return;
+  battleState.phase = 'busy';
+
+  const pMoves = battleState.player.monster.moves || [];
+  const playerMove = pMoves[playerMoveIdx] || { name: 'たいあたり', type: battleState.player.stats.monsterType || '念', weight: 'light', power: 60, strong_against: [] };
+  const enemyMove  = pickEnemyMove();
+  const ps = battleState.player.stats;
+  const es = battleState.enemy.stats;
+
+  // Turn order: heavy move penalty on SPD
+  const pTurnSpd = playerMove.weight === 'heavy' ? ps.spd * 0.7 : ps.spd;
+  const eTurnSpd = enemyMove.weight  === 'heavy' ? es.spd * 0.7 : es.spd;
+  const playerFirst = pTurnSpd >= eTurnSpd;
+
+  battleState.log.push({ text: '─ Turn ' + battleState.turn + (playerFirst ? '　あなた先攻' : '　相手先攻') + ' ─', cls: 'btl-system' });
+
+  function logAtk(move, atkMonster, res, side) {
+    const typeHit = res.typeMultiplier > 1 ? ' 🎯<b>効果抜群！</b>' : '';
+    let hit = '';
+    if (res.isClean) hit = ' <span class="btl-clean">✨クリーンヒット！</span>';
+    else if (res.isGraze) hit = ' <span class="btl-graze">かすりヒット</span>';
+    const dmgLine = typeHit + ' → ダメージ <b>' + res.damage + '</b>' + hit;
+    battleState.log.push({ text: atkMonster.name + 'の「' + move.name + '」' + dmgLine, cls: side });
+  }
+
+  function doAttack(move, atkStats, defStats, atkMonster, side) {
+    const res = calcDamage(move, atkStats, defStats);
+    if (side === 'btl-player') {
+      battleState.enemy.currentHp = Math.max(0, battleState.enemy.currentHp - res.damage);
+    } else {
+      battleState.player.currentHp = Math.max(0, battleState.player.currentHp - res.damage);
+    }
+    logAtk(move, atkMonster, res, side);
+    return res;
+  }
+
+  function checkEnd() {
+    if (battleState.enemy.currentHp <= 0 && battleState.player.currentHp <= 0) { battleState.result = 'draw'; return true; }
+    if (battleState.enemy.currentHp  <= 0) { battleState.result = 'win';  return true; }
+    if (battleState.player.currentHp <= 0) { battleState.result = 'lose'; return true; }
+    return false;
+  }
+
+  if (playerFirst) {
+    doAttack(playerMove, ps, es, battleState.player.monster, 'btl-player');
+    if (!checkEnd()) {
+      doAttack(enemyMove, es, ps, battleState.enemy.monster, 'btl-enemy');
+      checkEnd();
+    }
+  } else {
+    doAttack(enemyMove, es, ps, battleState.enemy.monster, 'btl-enemy');
+    if (!checkEnd()) {
+      doAttack(playerMove, ps, es, battleState.player.monster, 'btl-player');
+      checkEnd();
+    }
+  }
+
+  if (battleState.result) {
+    battleState.phase = 'end';
+  } else {
+    battleState.turn++;
+    battleState.phase = 'select';
+  }
+
+  renderBattle();
+}
+
+function hpColor(pct) {
+  if (pct > 0.50) return '#44cc88';
+  if (pct > 0.25) return '#ffcc44';
+  return '#ff5544';
+}
+
+function renderBattle() {
+  if (!battleState) return;
+  const p = battleState.player;
+  const e = battleState.enemy;
+
+  // Enemy panel
+  const eIconEl = document.getElementById('btlEnemyIcon');
+  eIconEl.innerHTML = e.monster.imageUrl
+    ? '<img class="battle-fighter-icon" src="' + e.monster.imageUrl + '" alt="" />'
+    : '<span class="battle-fighter-emoji">' + (e.monster.emoji || '👾') + '</span>';
+  document.getElementById('btlEnemyName').textContent = e.monster.name;
+  const eType = e.monster.types && e.monster.types[0];
+  document.getElementById('btlEnemySub').textContent = (eType ? eType + 'タイプ' : '') + '　' + e.monster.city;
+  const ePct = e.currentHp / e.maxHp;
+  const eFill = document.getElementById('btlEnemyHpFill');
+  eFill.style.width = Math.max(0, Math.round(ePct * 100)) + '%';
+  eFill.style.background = hpColor(ePct);
+  document.getElementById('btlEnemyHpText').textContent = e.currentHp + '/' + e.maxHp;
+
+  // Player panel
+  const pIconEl = document.getElementById('btlPlayerIcon');
+  pIconEl.innerHTML = p.monster.imageUrl
+    ? '<img class="battle-fighter-icon" src="' + p.monster.imageUrl + '" alt="" />'
+    : '<span class="battle-fighter-emoji">' + (p.monster.emoji || '👾') + '</span>';
+  document.getElementById('btlPlayerName').textContent = p.monster.name;
+  const pType = p.monster.types && p.monster.types[0];
+  document.getElementById('btlPlayerSub').textContent = (pType ? pType + 'タイプ' : '') + '　' + (p.monster.city || '');
+  const pPct = p.currentHp / p.maxHp;
+  const pFill = document.getElementById('btlPlayerHpFill');
+  pFill.style.width = Math.max(0, Math.round(pPct * 100)) + '%';
+  pFill.style.background = hpColor(pPct);
+  document.getElementById('btlPlayerHpText').textContent = p.currentHp + '/' + p.maxHp;
+
+  // Move area / result area
+  const moveArea   = document.getElementById('btlMoveArea');
+  const resultArea = document.getElementById('btlResultArea');
+  if (battleState.phase === 'end') {
+    moveArea.style.display   = 'none';
+    resultArea.style.display = 'block';
+    let resHtml = '';
+    if (battleState.result === 'win') {
+      resHtml = '<div class="battle-result-win">🏆 勝利！</div><div class="battle-result-sub">' + p.monster.name + 'の勝ちです！</div>';
+    } else if (battleState.result === 'lose') {
+      resHtml = '<div class="battle-result-lose">💀 敗北...</div><div class="battle-result-sub">' + e.monster.name + 'に負けました</div>';
+    } else {
+      resHtml = '<div class="battle-result-draw">🤝 引き分け</div>';
+    }
+    const pCity = p.monster.city || '';
+    resHtml += '<div class="battle-btn-row">' +
+      '<button class="battle-btn" onclick="startBattle(\'' + pCity + '\')">もう一度</button>' +
+      '<button class="battle-btn" onclick="closeBattleModal()">閉じる</button>' +
+    '</div>';
+    resultArea.innerHTML = '<div class="battle-result-box">' + resHtml + '</div>';
+  } else {
+    moveArea.style.display   = 'flex';
+    resultArea.style.display = 'none';
+    const moves = p.monster.moves || [];
+    const disabled = battleState.phase !== 'select';
+    if (!moves.length) {
+      document.getElementById('btlMoveBtns').innerHTML =
+        '<button class="battle-move-btn light" onclick="executeTurn(0)"' + (disabled ? ' disabled' : '') + '>' +
+        '<div class="battle-move-btn-name">たいあたり</div><div class="battle-move-btn-meta">⚡軽 威力60</div></button>';
+    } else {
+      document.getElementById('btlMoveBtns').innerHTML = moves.map((mv, i) => {
+        const isHeavy = mv.weight === 'heavy';
+        const col = TYPE_COLORS[mv.type] || '#aaa';
+        return '<button class="battle-move-btn ' + (isHeavy ? 'heavy' : 'light') + '" onclick="executeTurn(' + i + ')"' + (disabled ? ' disabled' : '') + '>' +
+          '<div class="battle-move-btn-name">' + mv.name + '</div>' +
+          '<div class="battle-move-btn-meta">' + (isHeavy ? '💥重' : '⚡軽') +
+          ' <span style="color:' + col + '">' + mv.type + '</span> 威力' + mv.power + '</div>' +
+        '</button>';
+      }).join('');
+    }
+  }
+
+  // Log (newest first)
+  const logEl = document.getElementById('btlLog');
+  logEl.innerHTML = battleState.log.slice().reverse().map(entry =>
+    '<div class="battle-log-entry ' + entry.cls + '">' + entry.text + '</div>'
+  ).join('');
+}
+
+function openBattleModal() {
+  document.getElementById('battleModal').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeBattleModal() {
+  document.getElementById('battleModal').classList.add('hidden');
+  document.body.style.overflow = '';
+  battleState = null;
+}
 </script>
 </body>
 </html>
