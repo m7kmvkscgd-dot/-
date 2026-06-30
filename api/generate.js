@@ -1,5 +1,4 @@
 const { put } = require('@vercel/blob');
-const sharp = require('sharp');
 
 async function redisGet(key) {
   const url = process.env.UPSTASH_REDIS_REST_URL + '/get/' + encodeURIComponent(key);
@@ -202,9 +201,11 @@ module.exports = async function handler(req, res) {
         const b64 = imageData.data[0].b64_json;
         let buffer = Buffer.from(b64, 'base64');
 
-        // Detect facing direction via Claude Haiku vision
+        // Detect facing direction via Claude vision and flip if left-facing
+        const visionDebug = { attempted: false, rawAnswer: null, isLeftFacing: false, flipped: false, error: null, flipError: null };
         let isLeftFacing = false;
         try {
+          visionDebug.attempted = true;
           const visionRes = await fetch('https://api.anthropic.com/v1/messages', {
             method: 'POST',
             headers: {
@@ -213,7 +214,7 @@ module.exports = async function handler(req, res) {
               'anthropic-version': '2023-06-01',
             },
             body: JSON.stringify({
-              model: 'claude-haiku-4-5-20251001',
+              model: 'claude-sonnet-4-6',
               max_tokens: 10,
               messages: [{
                 role: 'user',
@@ -231,16 +232,29 @@ module.exports = async function handler(req, res) {
             }),
           });
           const visionData = await visionRes.json();
-          const answer = (visionData.content && visionData.content[0] && visionData.content[0].text || '').trim().toUpperCase();
-          isLeftFacing = answer.startsWith('LEFT');
+          if (visionData.error) {
+            visionDebug.error = JSON.stringify(visionData.error);
+          } else {
+            const rawAnswer = (visionData.content && visionData.content[0] && visionData.content[0].text || '').trim().toUpperCase();
+            visionDebug.rawAnswer = rawAnswer;
+            isLeftFacing = rawAnswer.startsWith('LEFT');
+            visionDebug.isLeftFacing = isLeftFacing;
+          }
         } catch (visionError) {
-          // Vision check failed — proceed without flipping
+          visionDebug.error = visionError.message;
         }
 
         // Flip horizontally if left-facing
         if (isLeftFacing) {
-          buffer = await sharp(buffer).flop().toBuffer();
+          try {
+            const sharp = require('sharp');
+            buffer = await sharp(buffer).flop().toBuffer();
+            visionDebug.flipped = true;
+          } catch (flipError) {
+            visionDebug.flipError = flipError.message;
+          }
         }
+        monster.visionDebug = visionDebug;
 
         const fileName = 'monsters/' + city.replace(/[^\w]/g, '') + '_' + (stage || 'adult') + '.png';
         const { url } = await put(fileName, buffer, {
