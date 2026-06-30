@@ -867,6 +867,7 @@
     background: rgba(255,255,255,0.04);
     border: 1px solid rgba(255,255,255,0.1);
     border-radius: 12px; padding: 10px 12px;
+    position: relative; overflow: visible;
   }
   .battle-fighter-header { display: flex; align-items: center; gap: 10px; margin-bottom: 7px; }
   .battle-fighter-icon { width: 44px; height: 44px; border-radius: 8px; object-fit: cover; }
@@ -877,7 +878,7 @@
   .battle-hp-row { display: flex; align-items: center; gap: 8px; }
   .battle-hp-label { font-size: 0.68rem; color: #888; min-width: 20px; }
   .battle-hp-track { flex: 1; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; }
-  .battle-hp-fill { height: 100%; border-radius: 4px; transition: width 0.4s ease, background 0.4s; }
+  .battle-hp-fill { height: 100%; border-radius: 4px; transition: width 0.7s cubic-bezier(0.22,1,0.36,1), background 0.5s; }
   .battle-hp-text { font-size: 0.72rem; color: #aaa; min-width: 56px; text-align: right; }
   .battle-vs { text-align: center; font-size: 0.82rem; color: #555; font-weight: 700; margin: -4px 0; }
   .battle-move-area { display: flex; flex-direction: column; gap: 8px; }
@@ -962,15 +963,144 @@
   #btlEffect.btl-active.btl-雷::before { background: rgba(255,255,220,0.75); }
   #btlEffect.btl-active.btl-鉄::before { background: rgba(255,255,255,0.55); }
   /* type background colors */
-  #btlEffect.btl-火 { background: rgba(255,80,20,0.28); }
-  #btlEffect.btl-水 { background: rgba(40,120,255,0.28); }
-  #btlEffect.btl-木 { background: rgba(40,180,60,0.28); }
-  #btlEffect.btl-雷 { background: rgba(255,220,0,0.3); }
-  #btlEffect.btl-雲 { background: rgba(200,220,255,0.22); }
-  #btlEffect.btl-土 { background: rgba(160,100,40,0.28); }
-  #btlEffect.btl-氷 { background: rgba(100,220,255,0.28); }
-  #btlEffect.btl-鉄 { background: rgba(180,180,200,0.32); }
-  #btlEffect.btl-念 { background: rgba(160,60,220,0.28); }
+  #btlEffect.btl-火 { background: rgba(255,80,20,0.48); }
+  #btlEffect.btl-水 { background: rgba(40,120,255,0.48); }
+  #btlEffect.btl-木 { background: rgba(40,180,60,0.48); }
+  #btlEffect.btl-雷 { background: rgba(255,220,0,0.52); }
+  #btlEffect.btl-雲 { background: rgba(200,220,255,0.40); }
+  #btlEffect.btl-土 { background: rgba(160,100,40,0.48); }
+  #btlEffect.btl-氷 { background: rgba(100,220,255,0.48); }
+  #btlEffect.btl-鉄 { background: rgba(180,180,200,0.55); }
+  #btlEffect.btl-念 { background: rgba(160,60,220,0.48); }
+
+  /* ===== BATTLE ANIMATIONS ===== */
+  /* Attack motion on icons */
+  @keyframes btl-atk-fwd {
+    0%   { transform: translateX(0) scale(1); }
+    40%  { transform: translateX(20px) scale(1.06); }
+    100% { transform: translateX(0) scale(1); }
+  }
+  @keyframes btl-atk-bwd {
+    0%   { transform: translateX(0) scale(1); }
+    40%  { transform: translateX(-20px) scale(1.06); }
+    100% { transform: translateX(0) scale(1); }
+  }
+  .btl-atk-fwd { animation: btl-atk-fwd 0.38s ease-out; }
+  .btl-atk-bwd { animation: btl-atk-bwd 0.38s ease-out; }
+
+  /* Hit flash / shake on fighter divs */
+  @keyframes btl-hit-flash {
+    0%,100% { filter: brightness(1); }
+    20%     { filter: brightness(3.5) saturate(0) sepia(1) hue-rotate(-10deg); }
+    50%     { filter: brightness(1.7) saturate(0.4); }
+  }
+  @keyframes btl-fighter-shake {
+    0%,100%  { transform: translateX(0); }
+    15%,55%  { transform: translateX(-9px); }
+    35%,75%  { transform: translateX(9px); }
+  }
+  .btl-hit   { animation: btl-hit-flash     0.5s ease-out; }
+  .btl-shake { animation: btl-fighter-shake 0.45s ease-out; }
+
+  /* Modal box shake for heavy hits */
+  @keyframes btl-modal-shake {
+    0%,100%  { transform: translateX(0) translateY(0); }
+    20%      { transform: translateX(-7px) translateY(-2px); }
+    40%      { transform: translateX(9px)  translateY(2px); }
+    60%      { transform: translateX(-4px) translateY(-1px); }
+    80%      { transform: translateX(5px)  translateY(1px); }
+  }
+  .btl-modal-shake { animation: btl-modal-shake 0.42s ease-out; }
+
+  /* Extra brightness flash for heavy moves */
+  #btlEffect.btl-active.btl-heavy::after {
+    content: ''; position: absolute; inset: 0;
+    background: rgba(255,255,255,0.22);
+    animation: btl-bg-flash 0.65s ease-out forwards;
+    z-index: 13;
+  }
+
+  /* Damage number popup */
+  @keyframes btl-dmg-pop {
+    0%   { transform: translateX(-50%) translateY(0)     scale(0.8); opacity: 1; }
+    25%  { transform: translateX(-50%) translateY(-22px) scale(1.2); opacity: 1; }
+    100% { transform: translateX(-50%) translateY(-68px) scale(0.9); opacity: 0; }
+  }
+  .btl-dmg {
+    position: absolute; left: 50%; top: 28%;
+    pointer-events: none; z-index: 25;
+    font-weight: 900; font-family: 'Noto Sans JP', sans-serif;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.9), 0 0 20px rgba(0,0,0,0.5);
+    animation: btl-dmg-pop 1.05s ease-out forwards;
+    white-space: nowrap;
+  }
+  .btl-dmg-normal { font-size: 1.8rem; color: #ffffff; }
+  .btl-dmg-graze  { font-size: 1.2rem; color: #888888; }
+  .btl-dmg-clean  { font-size: 2.4rem; color: #ffd700; filter: drop-shadow(0 0 10px #ffd700); }
+
+  /* Attack effect particles (5-point burst) */
+  @keyframes btl-p1 { from{transform:translate(0,0) scale(0.4);opacity:1} to{transform:translate(-72px,-60px) scale(2.4);opacity:0} }
+  @keyframes btl-p2 { from{transform:translate(0,0) scale(0.4);opacity:1} to{transform:translate(65px,-52px)  scale(2.0);opacity:0} }
+  @keyframes btl-p3 { from{transform:translate(0,0) scale(0.4);opacity:1} to{transform:translate(-12px,-88px) scale(2.8);opacity:0} }
+  @keyframes btl-p4 { from{transform:translate(0,0) scale(0.4);opacity:1} to{transform:translate(58px,-72px)  scale(2.2);opacity:0} }
+  @keyframes btl-p5 { from{transform:translate(0,0) scale(0.4);opacity:1} to{transform:translate(-58px,-32px) scale(1.8);opacity:0} }
+  .btl-fx-p {
+    position: absolute; font-size: 2.8rem; line-height: 1;
+    animation-duration: 0.85s; animation-fill-mode: forwards; animation-timing-function: ease-out;
+  }
+  .btl-fx-p1 { animation-name: btl-p1; animation-delay: 0ms; }
+  .btl-fx-p2 { animation-name: btl-p2; animation-delay: 75ms; }
+  .btl-fx-p3 { animation-name: btl-p3; animation-delay: 25ms; }
+  .btl-fx-p4 { animation-name: btl-p4; animation-delay: 55ms; }
+  .btl-fx-p5 { animation-name: btl-p5; animation-delay: 105ms; }
+
+  /* Win / Lose end overlay */
+  @keyframes btl-win-in {
+    0%   { opacity: 0; transform: scale(0.8); }
+    60%  { opacity: 1; transform: scale(1.06); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+  @keyframes btl-lose-fade {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  @keyframes btl-win-text {
+    0%   { transform: scale(0.4) rotate(-6deg); opacity: 0; }
+    60%  { transform: scale(1.2) rotate(2deg);  opacity: 1; }
+    100% { transform: scale(1)   rotate(0deg);  opacity: 1; }
+  }
+  @keyframes btl-star-burst {
+    from { transform: scale(0) rotate(0deg);   opacity: 1; }
+    to   { transform: scale(2.5) rotate(120deg); opacity: 0; }
+  }
+  #btlEndOverlay {
+    position: absolute; inset: 0; border-radius: 20px;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column; gap: 10px;
+    pointer-events: none; z-index: 50; opacity: 0;
+  }
+  #btlEndOverlay.btl-end-win {
+    background: radial-gradient(circle at 50% 40%, rgba(255,215,0,0.35) 0%, rgba(255,150,0,0.15) 50%, rgba(0,0,0,0) 75%);
+    animation: btl-win-in 0.55s ease-out forwards;
+  }
+  #btlEndOverlay.btl-end-lose {
+    background: rgba(0,0,0,0.65);
+    animation: btl-lose-fade 0.7s ease-out forwards;
+  }
+  .btl-end-win-text {
+    font-size: 3rem; font-weight: 900; color: #ffd700;
+    text-shadow: 0 0 30px #ffd700, 0 0 60px rgba(255,215,0,0.5), 2px 2px 0 rgba(0,0,0,0.8);
+    animation: btl-win-text 0.5s 0.1s ease-out both;
+  }
+  .btl-end-lose-text {
+    font-size: 2.5rem; font-weight: 900; color: #ff6666;
+    text-shadow: 0 0 20px rgba(255,50,50,0.6), 2px 2px 0 rgba(0,0,0,0.8);
+    animation: btl-lose-fade 0.6s 0.2s ease-out both; opacity: 0;
+  }
+  .btl-end-stars {
+    font-size: 2.4rem; letter-spacing: 0.3em;
+    animation: btl-star-burst 1.0s 0.25s ease-out forwards;
+  }
 
   .battle-result-box {
     text-align: center; padding: 14px 12px;
@@ -1132,10 +1262,11 @@
 <div class="battle-modal-overlay hidden" id="battleModal">
   <div class="battle-modal-box">
     <div id="btlEffect"></div>
+    <div id="btlEndOverlay"></div>
     <button class="battle-modal-close" onclick="closeBattleModal()">✕</button>
     <div class="battle-title">⚔️ バトル</div>
     <!-- Enemy -->
-    <div class="battle-fighter">
+    <div class="battle-fighter" id="btlEnemyFighter">
       <div class="battle-fighter-header">
         <div id="btlEnemyIcon"></div>
         <div class="battle-fighter-meta">
@@ -1151,7 +1282,7 @@
     </div>
     <div class="battle-vs">VS</div>
     <!-- Player -->
-    <div class="battle-fighter">
+    <div class="battle-fighter" id="btlPlayerFighter">
       <div class="battle-fighter-header">
         <div id="btlPlayerIcon"></div>
         <div class="battle-fighter-meta">
@@ -2548,7 +2679,9 @@ function startBattle(city) {
   const playerMonster = entry.monster;
   const ps = getEffectiveStats(playerMonster);
   const enemy = ENEMY_POOL[Math.floor(Math.random() * ENEMY_POOL.length)];
-  const es = getEffectiveStats(enemy);
+  // Scale enemy stats ±15% around player's effective stats
+  function vary(base) { return Math.max(1, Math.round(base * (0.85 + Math.random() * 0.30))); }
+  const es = { hp: vary(ps.hp), atk: vary(ps.atk), def: vary(ps.def), spd: vary(ps.spd) };
 
   battleState = {
     player: {
@@ -2577,7 +2710,8 @@ function pickEnemyMove() {
 function executeTurn(playerMoveIdx) {
   if (!battleState || battleState.phase !== 'select') return;
   battleState.phase = 'busy';
-  const pendingEffects = [];
+
+  const animEvents = []; // {atkSide, defSide, move, res}
 
   const pMoves = battleState.player.monster.moves || [];
   const playerMove = pMoves[playerMoveIdx] || { name: 'たいあたり', type: battleState.player.stats.monsterType || '念', weight: 'light', power: 60, strong_against: [] };
@@ -2585,7 +2719,6 @@ function executeTurn(playerMoveIdx) {
   const ps = battleState.player.stats;
   const es = battleState.enemy.stats;
 
-  // Turn order: heavy move penalty on SPD
   const pTurnSpd = playerMove.weight === 'heavy' ? ps.spd * 0.7 : ps.spd;
   const eTurnSpd = enemyMove.weight  === 'heavy' ? es.spd * 0.7 : es.spd;
   const playerFirst = pTurnSpd >= eTurnSpd;
@@ -2597,19 +2730,19 @@ function executeTurn(playerMoveIdx) {
     let hit = '';
     if (res.isClean) hit = ' <span class="btl-clean">✨クリーンヒット！</span>';
     else if (res.isGraze) hit = ' <span class="btl-graze">かすりヒット</span>';
-    const dmgLine = typeHit + ' → ダメージ <b>' + res.damage + '</b>' + hit;
-    battleState.log.push({ text: atkMonster.name + 'の「' + move.name + '」' + dmgLine, cls: side });
+    battleState.log.push({ text: atkMonster.name + 'の「' + move.name + '」' + typeHit + ' → ダメージ <b>' + res.damage + '</b>' + hit, cls: side });
   }
 
-  function doAttack(move, atkStats, defStats, atkMonster, side) {
+  function doAttack(move, atkStats, defStats, atkMonster, atkSide) {
     const res = calcDamage(move, atkStats, defStats);
-    if (side === 'btl-player') {
+    const defSide = atkSide === 'btl-player' ? 'btl-enemy' : 'btl-player';
+    if (atkSide === 'btl-player') {
       battleState.enemy.currentHp = Math.max(0, battleState.enemy.currentHp - res.damage);
     } else {
       battleState.player.currentHp = Math.max(0, battleState.player.currentHp - res.damage);
     }
-    logAtk(move, atkMonster, res, side);
-    if (side === 'btl-player') pendingEffects.push(move.type);
+    logAtk(move, atkMonster, res, atkSide);
+    animEvents.push({ atkSide, defSide, move, res });
     return res;
   }
 
@@ -2622,29 +2755,39 @@ function executeTurn(playerMoveIdx) {
 
   if (playerFirst) {
     doAttack(playerMove, ps, es, battleState.player.monster, 'btl-player');
-    if (!checkEnd()) {
-      doAttack(enemyMove, es, ps, battleState.enemy.monster, 'btl-enemy');
-      checkEnd();
-    }
+    if (!checkEnd()) { doAttack(enemyMove, es, ps, battleState.enemy.monster, 'btl-enemy'); checkEnd(); }
   } else {
     doAttack(enemyMove, es, ps, battleState.enemy.monster, 'btl-enemy');
-    if (!checkEnd()) {
-      doAttack(playerMove, ps, es, battleState.player.monster, 'btl-player');
-      checkEnd();
-    }
+    if (!checkEnd()) { doAttack(playerMove, ps, es, battleState.player.monster, 'btl-player'); checkEnd(); }
   }
 
-  if (battleState.result) {
-    battleState.phase = 'end';
-  } else {
-    battleState.turn++;
-    battleState.phase = 'select';
-  }
+  const finalResult = battleState.result;
+  if (!finalResult) battleState.turn++;
+  // phase stays 'busy' during animation; renderBattle disables buttons
 
   renderBattle();
-  pendingEffects.forEach((type, i) => {
-    setTimeout(() => playBattleEffect(type), i * 450);
+
+  // Staggered animation sequence: attack motion → effect → hit flash + popup
+  animEvents.forEach(({ atkSide, defSide, move, res }, i) => {
+    const t = i * 580;
+    setTimeout(() => playAttackMotion(atkSide), t);
+    if (atkSide === 'btl-player') {
+      setTimeout(() => playBattleEffect(move.type, move.weight === 'heavy'), t + 150);
+    }
+    setTimeout(() => {
+      playHitFlash(defSide, move.weight === 'heavy');
+      showDamagePopup(defSide, res.damage, res.isGraze, res.isClean);
+    }, t + 300);
   });
+
+  const totalTime = animEvents.length * 580 + 350;
+  setTimeout(() => {
+    battleState.phase = finalResult ? 'end' : 'select';
+    renderBattle();
+    if (finalResult && finalResult !== 'draw') {
+      setTimeout(() => playEndEffect(finalResult), 200);
+    }
+  }, totalTime);
 }
 
 function hpColor(pct) {
@@ -2742,15 +2885,74 @@ const FX_EMOJI = {
   '雲':'🌫', '土':'🌪', '氷':'❄️', '鉄':'✨', '念':'🌀',
 };
 
-function playBattleEffect(type) {
+function playAttackMotion(atkSide) {
+  const iconId = atkSide === 'btl-player' ? 'btlPlayerIcon' : 'btlEnemyIcon';
+  const cls    = atkSide === 'btl-player' ? 'btl-atk-fwd'  : 'btl-atk-bwd';
+  const el = document.getElementById(iconId);
+  if (!el) return;
+  el.classList.remove('btl-atk-fwd', 'btl-atk-bwd');
+  void el.offsetWidth;
+  el.classList.add(cls);
+  setTimeout(() => el.classList.remove(cls), 480);
+}
+
+function playHitFlash(defSide, isHeavy) {
+  const fighterId = defSide === 'btl-player' ? 'btlPlayerFighter' : 'btlEnemyFighter';
+  const el = document.getElementById(fighterId);
+  if (!el) return;
+  el.classList.remove('btl-hit', 'btl-shake');
+  void el.offsetWidth;
+  el.classList.add('btl-hit');
+  if (isHeavy) {
+    el.classList.add('btl-shake');
+    const box = document.querySelector('.battle-modal-box');
+    if (box) {
+      box.classList.remove('btl-modal-shake');
+      void box.offsetWidth;
+      box.classList.add('btl-modal-shake');
+      setTimeout(() => box.classList.remove('btl-modal-shake'), 520);
+    }
+  }
+  setTimeout(() => el.classList.remove('btl-hit', 'btl-shake'), 600);
+}
+
+function showDamagePopup(defSide, dmg, isGraze, isClean) {
+  const fighterId = defSide === 'btl-player' ? 'btlPlayerFighter' : 'btlEnemyFighter';
+  const el = document.getElementById(fighterId);
+  if (!el) return;
+  const popup = document.createElement('div');
+  const cls = isClean ? 'btl-dmg-clean' : isGraze ? 'btl-dmg-graze' : 'btl-dmg-normal';
+  popup.className = 'btl-dmg ' + cls;
+  popup.textContent = '-' + dmg;
+  el.appendChild(popup);
+  setTimeout(() => { if (popup.parentNode) popup.parentNode.removeChild(popup); }, 1150);
+}
+
+function playEndEffect(result) {
+  const overlay = document.getElementById('btlEndOverlay');
+  if (!overlay) return;
+  overlay.innerHTML = '';
+  overlay.className = '';
+  void overlay.offsetWidth;
+  if (result === 'win') {
+    overlay.className = 'btl-end-win';
+    overlay.innerHTML = '<div class="btl-end-stars">✨⭐✨</div><div class="btl-end-win-text">🏆 勝利！</div>';
+  } else if (result === 'lose') {
+    overlay.className = 'btl-end-lose';
+    overlay.innerHTML = '<div class="btl-end-lose-text">💀 敗北...</div>';
+  }
+}
+
+function playBattleEffect(type, isHeavy) {
   const el = document.getElementById('btlEffect');
   if (!el) return;
   el.className = '';
   el.innerHTML = '';
-  void el.offsetWidth; // reflow to restart animation
-  el.className = 'btl-active btl-' + type;
-  el.innerHTML = '<span class="btl-fx-icon">' + (FX_EMOJI[type] || '💥') + '</span>';
-  setTimeout(() => { el.className = ''; el.innerHTML = ''; }, 750);
+  void el.offsetWidth;
+  el.className = 'btl-active btl-' + type + (isHeavy ? ' btl-heavy' : '');
+  const emoji = FX_EMOJI[type] || '💥';
+  el.innerHTML = [1,2,3,4,5].map(n => '<span class="btl-fx-p btl-fx-p' + n + '">' + emoji + '</span>').join('');
+  setTimeout(() => { el.className = ''; el.innerHTML = ''; }, 950);
 }
 
 function openBattleModal() {
@@ -2761,6 +2963,8 @@ function openBattleModal() {
 function closeBattleModal() {
   document.getElementById('battleModal').classList.add('hidden');
   document.body.style.overflow = '';
+  const overlay = document.getElementById('btlEndOverlay');
+  if (overlay) { overlay.className = ''; overlay.innerHTML = ''; }
   battleState = null;
 }
 
