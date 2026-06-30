@@ -46,7 +46,7 @@ module.exports = async function handler(req, res) {
     if (isChild) {
       stageNote = 'This is the CHILD form. Make it look young, small, and cute. It should hint at what it will become as an adult but be clearly immature and less powerful. Write the lore in Japanese in 2-3 short sentences only.';
     } else if (childMonster) {
-      stageNote = 'This is the ADULT form. It is the evolved version of this child monster: name="' + childMonster.name + '", concept="' + childMonster.concept + '", types=' + JSON.stringify(childMonster.types) + '. The adult must look like a clear evolution of the child - same color scheme, same general theme, but larger, more powerful, and more detailed. Keep the same name, concept, and types as the child. Write a NEW lore in Japanese in 2-3 short sentences only - do NOT copy the child lore. Write something more legendary and powerful befitting an adult form.' + movesNote;
+      stageNote = 'This is the ADULT form. It is the evolved version of this child monster: name="' + childMonster.name + '", concept="' + childMonster.concept + '", types=' + JSON.stringify(childMonster.types) + '. The adult must look like a clear evolution of the child - same color scheme, same general theme, but larger, more powerful, and more detailed. Keep the same concept and types as the child. Give the adult a NEW katakana name: it must feel clearly related to the child name "' + childMonster.name + '" (share a root, sound, or theme) but sound stronger, more evolved, and more legendary — remove any childish or diminutive feel and make it sound imposing and powerful. Do NOT reuse the child name as-is. Keep the same concept and types as the child. Write a NEW lore in Japanese in 2-3 short sentences only - do NOT copy the child lore. Write something more legendary and powerful befitting an adult form.' + movesNote;
     } else {
       stageNote = 'This is the ADULT form. Make it look mature, powerful, and fully evolved. Write the lore in Japanese in 2-3 short sentences only.' + movesNote;
     }
@@ -88,7 +88,6 @@ module.exports = async function handler(req, res) {
     }
 
     if (!isChild && childMonster) {
-      monster.name = childMonster.name;
       monster.concept = childMonster.concept;
       monster.types = childMonster.types;
       monster.emoji = childMonster.emoji;
