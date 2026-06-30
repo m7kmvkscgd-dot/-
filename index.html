@@ -8,6 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="ご当地モンスター">
 <link rel="apple-touch-icon" href="/icon.jpg">
+<script src="/wards-geojson.js"></script>
 <title>ご当地モンスター</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Hachi+Maru+Pop&family=Noto+Sans+JP:wght@400;700;900&display=swap');
@@ -941,88 +942,6 @@ const WEATHER_CODES = {
   95: 'thunder', 96: 'thunder', 99: 'thunder',
 };
 
-const SPECIAL_WARDS = {
-  tokyo: {
-    bounds: { minLat: 35.53, maxLat: 35.82, minLon: 139.55, maxLon: 139.92 },
-    wards: [
-      { name: '千代田区', minLat: 35.668, maxLat: 35.702, minLon: 139.737, maxLon: 139.775 },
-      { name: '中央区', minLat: 35.658, maxLat: 35.682, minLon: 139.758, maxLon: 139.800 },
-      { name: '港区', minLat: 35.635, maxLat: 35.672, minLon: 139.718, maxLon: 139.770 },
-      { name: '新宿区', minLat: 35.680, maxLat: 35.720, minLon: 139.690, maxLon: 139.740 },
-      { name: '文京区', minLat: 35.700, maxLat: 35.735, minLon: 139.730, maxLon: 139.770 },
-      { name: '台東区', minLat: 35.703, maxLat: 35.730, minLon: 139.770, maxLon: 139.810 },
-      { name: '墨田区', minLat: 35.695, maxLat: 35.730, minLon: 139.790, maxLon: 139.830 },
-      { name: '江東区', minLat: 35.645, maxLat: 35.700, minLon: 139.790, maxLon: 139.860 },
-      { name: '品川区', minLat: 35.590, maxLat: 35.645, minLon: 139.690, maxLon: 139.760 },
-      { name: '目黒区', minLat: 35.620, maxLat: 35.660, minLon: 139.670, maxLon: 139.720 },
-      { name: '大田区', minLat: 35.545, maxLat: 35.610, minLon: 139.680, maxLon: 139.760 },
-      { name: '世田谷区', minLat: 35.610, maxLat: 35.670, minLon: 139.600, maxLon: 139.680 },
-      { name: '渋谷区', minLat: 35.645, maxLat: 35.680, minLon: 139.680, maxLon: 139.720 },
-      { name: '中野区', minLat: 35.695, maxLat: 35.730, minLon: 139.640, maxLon: 139.680 },
-      { name: '杉並区', minLat: 35.680, maxLat: 35.720, minLon: 139.590, maxLon: 139.650 },
-      { name: '豊島区', minLat: 35.720, maxLat: 35.750, minLon: 139.700, maxLon: 139.740 },
-      { name: '北区', minLat: 35.745, maxLat: 35.790, minLon: 139.710, maxLon: 139.760 },
-      { name: '荒川区', minLat: 35.730, maxLat: 35.760, minLon: 139.770, maxLon: 139.810 },
-      { name: '板橋区', minLat: 35.745, maxLat: 35.800, minLon: 139.660, maxLon: 139.720 },
-      { name: '練馬区', minLat: 35.730, maxLat: 35.790, minLon: 139.580, maxLon: 139.660 },
-      { name: '足立区', minLat: 35.760, maxLat: 35.820, minLon: 139.750, maxLon: 139.870 },
-      { name: '葛飾区', minLat: 35.730, maxLat: 35.790, minLon: 139.830, maxLon: 139.900 },
-      { name: '江戸川区', minLat: 35.680, maxLat: 35.750, minLon: 139.840, maxLon: 139.930 },
-    ]
-  },
-  yokohama: {
-    bounds: { minLat: 35.30, maxLat: 35.60, minLon: 139.49, maxLon: 139.70 },
-    wards: [
-      { name: '鶴見区', minLat: 35.505, maxLat: 35.545, minLon: 139.660, maxLon: 139.710 },
-      { name: '神奈川区', minLat: 35.480, maxLat: 35.515, minLon: 139.610, maxLon: 139.660 },
-      { name: '西区', minLat: 35.455, maxLat: 35.480, minLon: 139.610, maxLon: 139.645 },
-      { name: '中区', minLat: 35.435, maxLat: 35.470, minLon: 139.630, maxLon: 139.670 },
-      { name: '南区', minLat: 35.415, maxLat: 35.450, minLon: 139.610, maxLon: 139.650 },
-      { name: '保土ケ谷区', minLat: 35.445, maxLat: 35.490, minLon: 139.565, maxLon: 139.615 },
-      { name: '磯子区', minLat: 35.385, maxLat: 35.430, minLon: 139.620, maxLon: 139.660 },
-      { name: '金沢区', minLat: 35.330, maxLat: 35.390, minLon: 139.610, maxLon: 139.660 },
-      { name: '港北区', minLat: 35.520, maxLat: 35.565, minLon: 139.595, maxLon: 139.645 },
-      { name: '戸塚区', minLat: 35.375, maxLat: 35.430, minLon: 139.520, maxLon: 139.590 },
-      { name: '港南区', minLat: 35.380, maxLat: 35.425, minLon: 139.575, maxLon: 139.625 },
-      { name: '旭区', minLat: 35.455, maxLat: 35.505, minLon: 139.520, maxLon: 139.580 },
-      { name: '緑区', minLat: 35.510, maxLat: 35.560, minLon: 139.545, maxLon: 139.605 },
-      { name: '瀬谷区', minLat: 35.455, maxLat: 35.495, minLon: 139.480, maxLon: 139.535 },
-      { name: '栄区', minLat: 35.340, maxLat: 35.385, minLon: 139.540, maxLon: 139.590 },
-      { name: '泉区', minLat: 35.385, maxLat: 35.430, minLon: 139.480, maxLon: 139.540 },
-      { name: '青葉区', minLat: 35.530, maxLat: 35.580, minLon: 139.490, maxLon: 139.560 },
-      { name: '都筑区', minLat: 35.530, maxLat: 35.570, minLon: 139.540, maxLon: 139.600 },
-    ]
-  },
-  osaka: {
-    bounds: { minLat: 34.58, maxLat: 34.73, minLon: 135.45, maxLon: 135.58 },
-    wards: [
-      { name: '都島区', minLat: 34.693, maxLat: 34.720, minLon: 135.520, maxLon: 135.545 },
-      { name: '福島区', minLat: 34.690, maxLat: 34.710, minLon: 135.460, maxLon: 135.490 },
-      { name: '此花区', minLat: 34.670, maxLat: 34.700, minLon: 135.430, maxLon: 135.475 },
-      { name: '西区', minLat: 34.670, maxLat: 34.695, minLon: 135.480, maxLon: 135.510 },
-      { name: '港区', minLat: 34.650, maxLat: 34.678, minLon: 135.455, maxLon: 135.490 },
-      { name: '大正区', minLat: 34.630, maxLat: 34.665, minLon: 135.455, maxLon: 135.490 },
-      { name: '天王寺区', minLat: 34.648, maxLat: 34.672, minLon: 135.505, maxLon: 135.530 },
-      { name: '浪速区', minLat: 34.648, maxLat: 34.668, minLon: 135.490, maxLon: 135.515 },
-      { name: '西淀川区', minLat: 34.700, maxLat: 34.730, minLon: 135.430, maxLon: 135.465 },
-      { name: '淀川区', minLat: 34.715, maxLat: 34.745, minLon: 135.470, maxLon: 135.510 },
-      { name: '東淀川区', minLat: 34.730, maxLat: 34.760, minLon: 135.510, maxLon: 135.545 },
-      { name: '東成区', minLat: 34.665, maxLat: 34.690, minLon: 135.530, maxLon: 135.555 },
-      { name: '生野区', minLat: 34.645, maxLat: 34.672, minLon: 135.530, maxLon: 135.560 },
-      { name: '旭区', minLat: 34.710, maxLat: 34.735, minLon: 135.540, maxLon: 135.565 },
-      { name: '城東区', minLat: 34.690, maxLat: 34.715, minLon: 135.540, maxLon: 135.565 },
-      { name: '鶴見区', minLat: 34.675, maxLat: 34.700, minLon: 135.555, maxLon: 135.585 },
-      { name: '阿倍野区', minLat: 34.625, maxLat: 34.652, minLon: 135.505, maxLon: 135.530 },
-      { name: '住之江区', minLat: 34.585, maxLat: 34.630, minLon: 135.465, maxLon: 135.510 },
-      { name: '住吉区', minLat: 34.600, maxLat: 34.635, minLon: 135.495, maxLon: 135.530 },
-      { name: '東住吉区', minLat: 34.600, maxLat: 34.635, minLon: 135.520, maxLon: 135.550 },
-      { name: '平野区', minLat: 34.590, maxLat: 34.625, minLon: 135.530, maxLon: 135.575 },
-      { name: '西成区', minLat: 34.615, maxLat: 34.650, minLon: 135.475, maxLon: 135.510 },
-      { name: '北区', minLat: 34.695, maxLat: 34.720, minLon: 135.490, maxLon: 135.525 },
-      { name: '中央区', minLat: 34.668, maxLat: 34.698, minLon: 135.495, maxLon: 135.530 },
-    ]
-  }
-};
 
 const PREFECTURES = [
   { name: '北海道', region: '北海道' },
@@ -1414,17 +1333,31 @@ function getExpProgress(adultCount) {
   return { level, progress, needed, percent: Math.min(100, (progress / needed) * 100) };
 }
 
-function detectWard(lat, lon) {
-  for (const [city, data] of Object.entries(SPECIAL_WARDS)) {
-    const b = data.bounds;
-    if (lat >= b.minLat && lat <= b.maxLat && lon >= b.minLon && lon <= b.maxLon) {
-      for (const ward of data.wards) {
-        if (lat >= ward.minLat && lat <= ward.maxLat && lon >= ward.minLon && lon <= ward.maxLon) {
-          return city === 'tokyo' ? ward.name : city === 'yokohama' ? ward.name + '（横浜）' : ward.name + '（大阪）';
-        }
-      }
-      return city === 'tokyo' ? '東京都内' : '大阪市内';
+function pointInPolygon(lon, lat, polygon) {
+  let inside = false;
+  const n = polygon.length;
+  let j = n - 1;
+  for (let i = 0; i < n; i++) {
+    const xi = polygon[i][0], yi = polygon[i][1];
+    const xj = polygon[j][0], yj = polygon[j][1];
+    if ((yi > lat) !== (yj > lat) && lon < (xj - xi) * (lat - yi) / (yj - yi) + xi) {
+      inside = !inside;
     }
+    j = i;
+  }
+  return inside;
+}
+
+function detectWard(lat, lon) {
+  if (!window.WARDS_DATA) return null;
+  for (const [wardName, polygon] of Object.entries(WARDS_DATA.tokyo)) {
+    if (pointInPolygon(lon, lat, polygon)) return wardName;
+  }
+  for (const [wardName, polygon] of Object.entries(WARDS_DATA.osaka)) {
+    if (pointInPolygon(lon, lat, polygon)) return wardName;
+  }
+  for (const [wardName, polygon] of Object.entries(WARDS_DATA.yokohama)) {
+    if (pointInPolygon(lon, lat, polygon)) return wardName;
   }
   return null;
 }
