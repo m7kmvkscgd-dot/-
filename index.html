@@ -2645,7 +2645,9 @@ function startBattle(city) {
   openBattleModal();
   renderBattle();
 
-  // Async pixel sprite generation — non-blocking, re-renders when ready
+  // NOTE: auto pixel sprite generation disabled to prevent unintended API costs
+  // To re-enable, uncomment the block below:
+  /*
   const savedBattleState = battleState;
   generatePixelSpriteIfNeeded(playerMonster, city, 'adult').then(url => {
     if (url && battleState === savedBattleState) {
@@ -2659,6 +2661,7 @@ function startBattle(city) {
       renderBattle();
     }
   });
+  */
 }
 
 async function generatePixelSpriteIfNeeded(monster, city, stage) {
