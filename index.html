@@ -892,8 +892,17 @@
   }
   .battle-move-btn:hover:not(:disabled) { background: rgba(255,255,255,0.13); }
   .battle-move-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-  .battle-move-btn.heavy { border: 1px solid rgba(255,136,102,0.45); }
-  .battle-move-btn.light { border: 1px solid rgba(255,221,85,0.4); }
+  .dev-gen-btn {
+    font-size: 0.7rem; color: #555;
+    background: transparent;
+    border: 1px dashed #333; border-radius: 8px;
+    padding: 6px 14px; cursor: pointer;
+    font-family: 'Noto Sans JP', sans-serif;
+    transition: color 0.15s, border-color 0.15s;
+    margin-top: 12px;
+  }
+  .dev-gen-btn:hover:not(:disabled) { color: #888; border-color: #555; }
+  .dev-gen-btn:disabled { opacity: 0.4; cursor: not-allowed; }
   .battle-move-btn-name { font-size: 0.88rem; font-weight: 700; color: #f0ebe0; }
   .battle-move-btn-meta { font-size: 0.67rem; color: #aaa; margin-top: 3px; }
   .battle-log-wrap {
@@ -1013,6 +1022,9 @@
       </div>
       <div id="monstersPanel">
         <div class="farm-grid" id="farmGrid"></div>
+        <div style="text-align:center;padding:4px 0 8px">
+          <button class="dev-gen-btn" id="randomGenBtn" onclick="generateRandomMonster()">🎲 ランダム生成（テスト用）</button>
+        </div>
       </div>
       <div id="tokusanhinPanel" style="display:none"></div>
       <div class="map-panel" id="mapPanel"></div>
@@ -2642,13 +2654,14 @@ function renderBattle() {
     const disabled = battleState.phase !== 'select';
     if (!moves.length) {
       document.getElementById('btlMoveBtns').innerHTML =
-        '<button class="battle-move-btn light" onclick="executeTurn(0)"' + (disabled ? ' disabled' : '') + '>' +
+        '<button class="battle-move-btn light" style="border: 2px solid #666;" onclick="executeTurn(0)"' + (disabled ? ' disabled' : '') + '>' +
         '<div class="battle-move-btn-name">たいあたり</div><div class="battle-move-btn-meta">⚡軽 威力60</div></button>';
     } else {
       document.getElementById('btlMoveBtns').innerHTML = moves.map((mv, i) => {
         const isHeavy = mv.weight === 'heavy';
         const col = TYPE_COLORS[mv.type] || '#aaa';
-        return '<button class="battle-move-btn ' + (isHeavy ? 'heavy' : 'light') + '" onclick="executeTurn(' + i + ')"' + (disabled ? ' disabled' : '') + '>' +
+        const borderWidth = isHeavy ? '3px' : '2px';
+        return '<button class="battle-move-btn ' + (isHeavy ? 'heavy' : 'light') + '" style="border: ' + borderWidth + ' solid ' + col + ';" onclick="executeTurn(' + i + ')"' + (disabled ? ' disabled' : '') + '>' +
           '<div class="battle-move-btn-name">' + mv.name + '</div>' +
           '<div class="battle-move-btn-meta">' + (isHeavy ? '💥重' : '⚡軽') +
           ' <span style="color:' + col + '">' + mv.type + '</span> 威力' + mv.power + '</div>' +
@@ -2673,6 +2686,30 @@ function closeBattleModal() {
   document.getElementById('battleModal').classList.add('hidden');
   document.body.style.overflow = '';
   battleState = null;
+}
+
+async function generateRandomMonster() {
+  const cities = Object.keys(CITY_TO_PREF);
+  const city = cities[Math.floor(Math.random() * cities.length)];
+  const btn = document.getElementById('randomGenBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ 生成中... (' + city + ')';
+  try {
+    const res = await fetch('/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ city, stage: 'adult' }),
+    });
+    const monster = await res.json();
+    if (monster.error) throw new Error(monster.error);
+    renderMonster(monster, null);
+    openMonsterModal();
+  } catch (e) {
+    alert('生成エラー: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🎲 ランダム生成（テスト用）';
+  }
 }
 </script>
 </body>
