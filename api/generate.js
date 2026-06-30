@@ -332,7 +332,7 @@ module.exports = async function handler(req, res) {
                   },
                   {
                     type: 'text',
-                    text: 'Is the main character/creature in this image facing toward the LEFT side or the RIGHT side of the image? Reply with exactly one word: LEFT or RIGHT.',
+                    text: 'Look at the main character or creature in this image. Consider their overall body orientation and the direction they appear to be moving or looking. Even in a three-quarter or diagonal pose, determine which side of the image they are primarily oriented toward. Would they move toward the LEFT side or the RIGHT side of the image? Reply with exactly one word: LEFT or RIGHT.',
                   },
                 ],
               }],
