@@ -909,7 +909,7 @@
     background: rgba(0,0,0,0.35);
     border: 1px solid rgba(255,255,255,0.07);
     border-radius: 10px; padding: 10px;
-    max-height: 200px; overflow-y: auto;
+    height: 200px; overflow-y: auto;
     display: flex; flex-direction: column; gap: 3px;
   }
   .battle-log-entry { font-size: 0.72rem; line-height: 1.55; padding: 2px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
@@ -919,6 +919,59 @@
   .btl-system { color: #cc99ff; font-weight: 700; text-align: center; }
   .btl-clean  { color: #ffd700; font-weight: 700; }
   .btl-graze  { color: #777; font-style: italic; }
+
+  /* ===== BATTLE EFFECTS ===== */
+  @keyframes btl-bg-flash {
+    0%   { opacity: 0; }
+    25%  { opacity: 1; }
+    100% { opacity: 0; }
+  }
+  @keyframes btl-icon-pop {
+    0%   { transform: scale(0.2); opacity: 0; }
+    25%  { transform: scale(1.3); opacity: 1; }
+    65%  { transform: scale(1.0); opacity: 0.9; }
+    100% { transform: scale(1.8); opacity: 0; }
+  }
+  @keyframes btl-lightning-flash {
+    0%,100% { opacity: 0; }
+    8%  { opacity: 0.85; }
+    18% { opacity: 0; }
+    30% { opacity: 0.55; }
+    40% { opacity: 0; }
+  }
+  #btlEffect {
+    position: absolute; inset: 0; border-radius: 20px; overflow: hidden;
+    pointer-events: none; z-index: 10;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0;
+  }
+  #btlEffect.btl-active { animation: btl-bg-flash 0.7s ease-out forwards; }
+  #btlEffect.btl-active .btl-fx-icon {
+    font-size: 4rem; line-height: 1;
+    animation: btl-icon-pop 0.7s ease-out forwards;
+    filter: drop-shadow(0 0 14px currentColor);
+    position: relative; z-index: 11;
+  }
+  #btlEffect.btl-active.btl-雷::before,
+  #btlEffect.btl-active.btl-鉄::before {
+    content: '';
+    position: absolute; inset: 0;
+    animation: btl-lightning-flash 0.5s ease-out forwards;
+    z-index: 12;
+  }
+  #btlEffect.btl-active.btl-雷::before { background: rgba(255,255,220,0.75); }
+  #btlEffect.btl-active.btl-鉄::before { background: rgba(255,255,255,0.55); }
+  /* type background colors */
+  #btlEffect.btl-火 { background: rgba(255,80,20,0.28); }
+  #btlEffect.btl-水 { background: rgba(40,120,255,0.28); }
+  #btlEffect.btl-木 { background: rgba(40,180,60,0.28); }
+  #btlEffect.btl-雷 { background: rgba(255,220,0,0.3); }
+  #btlEffect.btl-雲 { background: rgba(200,220,255,0.22); }
+  #btlEffect.btl-土 { background: rgba(160,100,40,0.28); }
+  #btlEffect.btl-氷 { background: rgba(100,220,255,0.28); }
+  #btlEffect.btl-鉄 { background: rgba(180,180,200,0.32); }
+  #btlEffect.btl-念 { background: rgba(160,60,220,0.28); }
+
   .battle-result-box {
     text-align: center; padding: 14px 12px;
     background: rgba(255,255,255,0.04);
@@ -1078,6 +1131,7 @@
 
 <div class="battle-modal-overlay hidden" id="battleModal">
   <div class="battle-modal-box">
+    <div id="btlEffect"></div>
     <button class="battle-modal-close" onclick="closeBattleModal()">✕</button>
     <div class="battle-title">⚔️ バトル</div>
     <!-- Enemy -->
@@ -2523,6 +2577,7 @@ function pickEnemyMove() {
 function executeTurn(playerMoveIdx) {
   if (!battleState || battleState.phase !== 'select') return;
   battleState.phase = 'busy';
+  const pendingEffects = [];
 
   const pMoves = battleState.player.monster.moves || [];
   const playerMove = pMoves[playerMoveIdx] || { name: 'たいあたり', type: battleState.player.stats.monsterType || '念', weight: 'light', power: 60, strong_against: [] };
@@ -2554,6 +2609,7 @@ function executeTurn(playerMoveIdx) {
       battleState.player.currentHp = Math.max(0, battleState.player.currentHp - res.damage);
     }
     logAtk(move, atkMonster, res, side);
+    pendingEffects.push(move.type);
     return res;
   }
 
@@ -2586,6 +2642,9 @@ function executeTurn(playerMoveIdx) {
   }
 
   renderBattle();
+  pendingEffects.forEach((type, i) => {
+    setTimeout(() => playBattleEffect(type), i * 450);
+  });
 }
 
 function hpColor(pct) {
@@ -2675,6 +2734,23 @@ function renderBattle() {
   logEl.innerHTML = battleState.log.slice().reverse().map(entry =>
     '<div class="battle-log-entry ' + entry.cls + '">' + entry.text + '</div>'
   ).join('');
+  logEl.scrollTop = 0;
+}
+
+const FX_EMOJI = {
+  '火':'🔥', '水':'🌊', '木':'🌿', '雷':'⚡',
+  '雲':'🌫', '土':'🌪', '氷':'❄️', '鉄':'✨', '念':'🌀',
+};
+
+function playBattleEffect(type) {
+  const el = document.getElementById('btlEffect');
+  if (!el) return;
+  el.className = '';
+  el.innerHTML = '';
+  void el.offsetWidth; // reflow to restart animation
+  el.className = 'btl-active btl-' + type;
+  el.innerHTML = '<span class="btl-fx-icon">' + (FX_EMOJI[type] || '💥') + '</span>';
+  setTimeout(() => { el.className = ''; el.innerHTML = ''; }, 750);
 }
 
 function openBattleModal() {
